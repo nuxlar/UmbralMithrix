@@ -1,0 +1,11 @@
+﻿{
+	"name": "UmbralMithrix",
+	"version_number": "1.0.1",
+	"website_url": "",
+	"description": "The Umbral King of Nothing uses shadows and clones to overwhelm his enemies.",
+	"dependencies": [
+		"bbepis-BepInExPack-5.4.2102",
+		"tristanmcpherson-R2API-4.4.1",
+		"Rune580-Risk_Of_Options-2.5.3"
+	]
+}
