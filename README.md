@@ -8,7 +8,6 @@ Phase info:
 - Phase 2 2 glass clones split off from the shadow after skyleap.
 - Phase 3 The shadow splits into 2 (66% HP Each for 1-2 players).
 - Phase 4 The shadow becomes invulnerable and summons shadows of his enemies, survive until the shadow's shield falls, it'll slowly start stealing items destroy him quickly.
-- Phase 5 (Escaping The Moon) the flame lines have increased speed and spawn rate
 
 ## Changelog
 
@@ -24,6 +23,7 @@ Phase info:
 - Fixes Phase 2 HP being too low
 - Adds 2 glass clones on Phase 2 skyleap
 - Blacklists some items from Phase 4 doppels (Spare Drone Parts, Empathy Cores, N'kuhana's Opinion, Razorwire, Tesla Coil)
+- Removes faster escape flame lines for less lag (in case using voidling escape or something)
 
 **1.0.1**
 
