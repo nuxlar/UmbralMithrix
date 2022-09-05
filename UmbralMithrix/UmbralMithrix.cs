@@ -14,7 +14,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.0.0")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.1.0")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -70,7 +70,7 @@ namespace UmbralMithrix
       On.EntityStates.BrotherMonster.StaggerExit.OnEnter += StaggerExitOnEnter;
       On.EntityStates.BrotherMonster.StaggerLoop.OnEnter += StaggerLoopOnEnter;
       On.EntityStates.BrotherMonster.TrueDeathState.OnEnter += TrueDeathStateOnEnter;
-      On.EntityStates.BrotherHaunt.FireRandomProjectiles.OnEnter += FireRandomProjectiles;
+      // On.EntityStates.BrotherHaunt.FireRandomProjectiles.OnEnter += FireRandomProjectiles;
     }
 
     private void AdjustBaseStats()
@@ -90,12 +90,16 @@ namespace UmbralMithrix
         mobilityMultiplier = (ModConfig.phase1LoopMobilityScaling.Value * Run.instance.loopClearCount) + (ModConfig.phase1PlayerMobilityScaling.Value * playerCount);
       }
       CharacterBody MithrixBody = Mithrix.GetComponent<CharacterBody>();
+      CharacterBody MithrixGlassBody = MithrixGlass.GetComponent<CharacterBody>();
       CharacterDirection MithrixDirection = Mithrix.GetComponent<CharacterDirection>();
       CharacterMotor MithrixMotor = Mithrix.GetComponent<CharacterMotor>();
 
       MithrixMotor.mass = ModConfig.mass.Value;
       MithrixMotor.airControl = ModConfig.aircontrol.Value;
       MithrixMotor.jumpCount = ModConfig.jumpcount.Value;
+
+      MithrixGlassBody.baseDamage = (ModConfig.basedamage.Value) * 100 / 4;
+      MithrixGlassBody.levelDamage = (ModConfig.leveldamage.Value) * 100 / 4;
 
       MithrixBody.baseMaxHealth = (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 10;
       MithrixBody.levelMaxHealth = (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 10;
@@ -180,16 +184,10 @@ namespace UmbralMithrix
         mobilityMultiplier = (ModConfig.phase2LoopMobilityScaling.Value * Run.instance.loopClearCount) + (ModConfig.phase2PlayerMobilityScaling.Value * playerCount);
       }
       CharacterBody MithrixBody = Mithrix.GetComponent<CharacterBody>();
-      CharacterBody MithrixGlassBody = MithrixGlass.GetComponent<CharacterBody>();
       CharacterDirection MithrixDirection = Mithrix.GetComponent<CharacterDirection>();
 
-      MithrixBody.baseMaxHealth = playerCount > 2 ? ((ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 10) / 1.5f : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 10;
-      MithrixBody.levelMaxHealth = playerCount > 2 ? ((ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 10) / 1.5f : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 10;
-
-      MithrixGlassBody.baseMaxHealth = (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 10;
-      MithrixGlassBody.levelMaxHealth = (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 10;
-      MithrixGlassBody.baseDamage = (ModConfig.basedamage.Value) * 100 / 4;
-      MithrixGlassBody.levelDamage = (ModConfig.leveldamage.Value) * 100 / 4;
+      MithrixBody.baseMaxHealth = playerCount > 2 ? ((ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 5) / 1.5f : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 5;
+      MithrixBody.levelMaxHealth = playerCount > 2 ? ((ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 5) / 1.5f : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 5;
 
       MithrixBody.baseMoveSpeed = ModConfig.basespeed.Value + (ModConfig.basespeed.Value * mobilityMultiplier);
       MithrixBody.baseAcceleration = ModConfig.acceleration.Value + (ModConfig.acceleration.Value * mobilityMultiplier);
@@ -446,14 +444,14 @@ namespace UmbralMithrix
       orig(self);
     }
     // Make Brother Haunt fire more projectiles after the fight
-    private void FireRandomProjectiles(On.EntityStates.BrotherHaunt.FireRandomProjectiles.orig_OnEnter orig, EntityStates.BrotherHaunt.FireRandomProjectiles self)
-    {
-      EntityStates.BrotherHaunt.FireRandomProjectiles.maximumCharges = 150;
-      EntityStates.BrotherHaunt.FireRandomProjectiles.chargeRechargeDuration = 0.08f;
-      EntityStates.BrotherHaunt.FireRandomProjectiles.chanceToFirePerSecond = 0.5f;
-      EntityStates.BrotherHaunt.FireRandomProjectiles.damageCoefficient = 15f;
-      orig(self);
-    }
+    // private void FireRandomProjectiles(On.EntityStates.BrotherHaunt.FireRandomProjectiles.orig_OnEnter orig, EntityStates.BrotherHaunt.FireRandomProjectiles self)
+    // {
+    //   EntityStates.BrotherHaunt.FireRandomProjectiles.maximumCharges = 150;
+    //   EntityStates.BrotherHaunt.FireRandomProjectiles.chargeRechargeDuration = 0.08f;
+    //   EntityStates.BrotherHaunt.FireRandomProjectiles.chanceToFirePerSecond = 0.5f;
+    //   EntityStates.BrotherHaunt.FireRandomProjectiles.damageCoefficient = 15f;
+    //   orig(self);
+    // }
 
     private void ExitSkyLeapOnEnter(On.EntityStates.BrotherMonster.ExitSkyLeap.orig_OnEnter orig, ExitSkyLeap self)
     {
@@ -524,13 +522,14 @@ namespace UmbralMithrix
     {
       if (self.isAuthority)
       {
-        if (self.characterBody.name == "BrotherGlass(Clone)")
+        if (self.characterBody.name == "BrotherGlassBody(Clone)")
         {
-          Util.PlaySound(EntityStates.LunarGolem.FireTwinShots.attackSoundString, self.gameObject);
           Ray aimRay = self.GetAimRay();
-          // Vector3 bodyPosition = self.characterBody.transform.position;
-          for (int i = 0; i < ModConfig.BashProjectileCount.Value; i++)
+          for (int i = 0; i < 12; i++)
+          {
+            Util.PlaySound(EntityStates.BrotherMonster.Weapon.FireLunarShards.fireSound, self.gameObject);
             ProjectileManager.instance.FireProjectile(FireLunarShards.projectilePrefab, aimRay.origin, Quaternion.LookRotation(aimRay.direction), self.gameObject, self.characterBody.damage * 0.1f / 12f, 0f, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
+          }
         }
         if (self.characterBody.name == "BrotherBody(Clone)")
         {
