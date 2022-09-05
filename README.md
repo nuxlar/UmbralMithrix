@@ -11,6 +11,16 @@ Phase info:
 - Phase 5 (Escaping The Moon) the flame lines have increased speed and spawn rate
 
 ## Changelog
+**1.1.0**
+
+- Fixes README
+- Replaces Mithrix's dash with an imp dash
+- Removes Projectiles from Bash, HammerSlam, Dash
+- Adds deteriorating glass clone to attacks
+- Mithrix periodically releases a super shard
+- Fixes Phase 2 HP being too low
+- Changes Phase 4 Umbra blacklist to monster blacklist
+
 **1.0.1**
 
 - 2 Glass Mithrix's for Phase 2 (66% HP Each Mithrix) (if > 2 players 1 more spawns and each has 100% HP)
