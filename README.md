@@ -4,9 +4,9 @@ Accursed Mithrix **reworked** variant with clones and new Phase 4 (https://thund
 
 Phase info:
 
-- Phase 1 Bash and Slam spawn a deteriorating glass clone with full damage and a trick, Dash is now a Blink.
+- Phase 1 Bash and Slam spawn a deteriorating glass clone with full damage and a trick up their sleeve, Dash is now a Blink.
 - Phase 2 2 glass clones split off from the shadow after skyleap.
-- Phase 3 The shadow splits into 2 (66% HP Each for 1-2 players) and glass clones split off after skyleap.
+- Phase 3 The shadow splits into 2 (66% HP Each for 1-2 players).
 - Phase 4 The shadow becomes invulnerable and summons shadows of his enemies, survive until the shadow's shield falls, it'll slowly start stealing items destroy him quickly.
 - Phase 5 (Escaping The Moon) the flame lines have increased speed and spawn rate
 
@@ -17,12 +17,13 @@ Phase info:
 - **DELETE YOUR UMBRALMITHRIX CONFIG**
 - Fixes README
 - Adds Mountain Shrine on the moon to activate Umbral Mithrix (Cheers to Race and Cap)
-- Replaces Mithrix's dash with an imp dash (can also dash in mid air now)
+- Replaces Mithrix's dash with an extended imp dash (can also dash in mid air now)
 - Removes Projectiles from Bash, Slam (Keeps orbs), Dash
 - Adds deteriorating glass clone to attacks, Slam and Bash (last 4 seconds)
 - Glass Clones release a super shard when they Bash
 - Fixes Phase 2 HP being too low
-- Changes Phase 4 Umbra blacklist to monster blacklist
+- Adds 2 glass clones on Phase 2 skyleap
+- Blacklists some items from Phase 4 doppels (Spare Drone Parts, Empathy Cores, N'kuhana's Opinion, Razorwire, Tesla Coil)
 
 **1.0.1**
 
