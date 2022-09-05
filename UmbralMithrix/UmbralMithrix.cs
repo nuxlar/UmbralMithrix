@@ -138,12 +138,24 @@ namespace UmbralMithrix
       SkillDef BashChange = Bash.variants[0].skillDef;
       BashChange.baseRechargeInterval = ModConfig.SecCD.Value;
       BashChange.baseMaxStock = ModConfig.SecStocks.Value;
-
+      // Replace dash with blink (creating new skilldef so it can be done while midair)
       SkillFamily Dash = SklLocate.utility.skillFamily;
-      SkillDef DashChange = Dash.variants[0].skillDef;
-      DashChange.baseRechargeInterval = ModConfig.UtilCD.Value;
-      DashChange.baseMaxStock = ModConfig.UtilStocks.Value;
-      DashChange.activationState = new EntityStates.SerializableEntityStateType(typeof(EntityStates.ImpMonster.BlinkState));
+      SkillDef blink = ScriptableObject.CreateInstance<SkillDef>();
+      blink.activationState = new EntityStates.SerializableEntityStateType(typeof(EntityStates.ImpMonster.BlinkState)); ;
+      blink.activationStateMachineName = "Weapon";
+      blink.baseMaxStock = ModConfig.UtilStocks.Value;
+      blink.baseRechargeInterval = ModConfig.UtilCD.Value;
+      blink.beginSkillCooldownOnSkillEnd = true;
+      blink.canceledFromSprinting = false;
+      blink.cancelSprintingOnActivation = false;
+      blink.fullRestockOnAssign = true;
+      blink.interruptPriority = EntityStates.InterruptPriority.Skill;
+      blink.isCombatSkill = true;
+      blink.mustKeyPress = false;
+      blink.rechargeStock = 1;
+      blink.requiredStock = 1;
+      blink.stockToConsume = 1;
+      Dash.variants[0].skillDef = blink;
 
       SkillFamily Ult = SklLocate.special.skillFamily;
       SkillDef UltChange = Ult.variants[0].skillDef;
@@ -332,7 +344,8 @@ namespace UmbralMithrix
       if (self.name == "BrotherHurtMaster(Clone)")
       {
         body.AddBuff(RoR2Content.Buffs.Immune);
-        RoR2.Artifacts.DoppelgangerInvasionManager.PerformInvasion(RoR2Application.rng);
+        if (!doppelEventHasTriggered)
+          RoR2.Artifacts.DoppelgangerInvasionManager.PerformInvasion(RoR2Application.rng);
         doppelEventHasTriggered = true;
         Task.Delay(20000 / Run.instance.loopClearCount).ContinueWith(o => { body.RemoveBuff(RoR2Content.Buffs.Immune); });
       }
@@ -511,18 +524,13 @@ namespace UmbralMithrix
     {
       if (self.isAuthority)
       {
-        if (ModConfig.BashProjectileCount.Value > 0)
+        if (self.characterBody.name == "BrotherGlass(Clone)")
         {
           Util.PlaySound(EntityStates.LunarGolem.FireTwinShots.attackSoundString, self.gameObject);
-          float num = 360f / ModConfig.BashProjectileCount.Value;
           Ray aimRay = self.GetAimRay();
-          Vector3 point = Vector3.ProjectOnPlane(self.inputBank.aimDirection, Vector3.up);
           // Vector3 bodyPosition = self.characterBody.transform.position;
           for (int i = 0; i < ModConfig.BashProjectileCount.Value; i++)
-          {
-            Vector3 cone = Quaternion.AngleAxis(num * i, Vector3.forward) * point;
-            ProjectileManager.instance.FireProjectile(FireLunarShards.projectilePrefab, self.characterBody.transform.position, Util.QuaternionSafeLookRotation(cone), self.gameObject, self.characterBody.damage * 0.1f / 12f, 0f, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
-          }
+            ProjectileManager.instance.FireProjectile(FireLunarShards.projectilePrefab, aimRay.origin, Quaternion.LookRotation(aimRay.direction), self.gameObject, self.characterBody.damage * 0.1f / 12f, 0f, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
         }
         if (self.characterBody.name == "BrotherBody(Clone)")
         {

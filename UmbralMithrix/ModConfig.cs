@@ -124,11 +124,11 @@ namespace UmbralMithrix
 
       PrimStocks = config.Bind("Skills", "Primary Stocks", 1, "Max Stocks for Mithrix's Weapon Slam. Vanilla: 1");
       SecStocks = config.Bind("Skills", "Secondary Stocks", 1, "Max Stocks for Mithrix's Dash Attack. Vanilla: 1");
-      UtilStocks = config.Bind("Skills", "Util Stocks", 2, "Max Stocks for Mithrix's Dash. Vanilla: 2");
+      UtilStocks = config.Bind("Skills", "Util Stocks", 4, "Max Stocks for Mithrix's Dash. Vanilla: 2");
       PrimCD = config.Bind("Skills", "Primary Cooldown", 3f, "Cooldown for Mithrix's Weapon Slam. Vanilla: 4");
       SecCD = config.Bind("Skills", "Secondary Cooldown", 4f, "Cooldown for Mithrix's Dash Attack. Vanilla: 5");
       UtilCD = config.Bind("Skills", "Util Cooldown", 2f, "Cooldown for Mithrix's Dash. Vanilla: 3");
-      SpecialCD = config.Bind("Skills", "Special Cooldown", 45f, "Cooldown for Mithrix's Jump Attack. Vanilla: 30");
+      SpecialCD = config.Bind("Skills", "Special Cooldown", 30f, "Cooldown for Mithrix's Jump Attack. Vanilla: 30");
 
       P2UltCount = config.Bind("New Skills", "P2 Ult Bursts", 5, "Total times the shrapnel waves fire in phase 2 ultimate. Vanilla: N/A");
       P2UltOrbCount = config.Bind("New Skills", "P2 Ult Waves", 12, "Total shrapnel waves and golem projectiles fired in a circle in phase 2 ultimate. Vanilla: N/A");
