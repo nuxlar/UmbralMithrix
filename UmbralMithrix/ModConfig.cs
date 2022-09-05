@@ -107,8 +107,8 @@ namespace UmbralMithrix
       phase2PlayerMobilityScaling = config.Bind("Player Scaling", "P2 Mobility Scaling", 0f, "Mobility boost percentage for Phase 2 PER PLAYER");
       phase3PlayerMobilityScaling = config.Bind("Player Scaling", "P3 Mobility Scaling", 0f, "Mobility boost percentage for Phase 3 PER PLAYER");
 
-      basehealth = config.Bind("Stats", "Base Health", 800f, "Vanilla: 1400");
-      levelhealth = config.Bind("Stats", "Level Health", 300f, "Health gained per level. Vanilla: 420");
+      basehealth = config.Bind("Stats", "Base Health", 1000f, "Vanilla: 1400");
+      levelhealth = config.Bind("Stats", "Level Health", 325f, "Health gained per level. Vanilla: 420");
       basedamage = config.Bind("Stats", "Base Damage", 15f, "Vanilla: 16");
       leveldamage = config.Bind("Stats", "Level Damage", 2.75f, "Damage gained per level. Vanilla: 3.2");
       basearmor = config.Bind("Stats", "Base Armor", 30f, "Vanilla: 20");
@@ -124,11 +124,11 @@ namespace UmbralMithrix
 
       PrimStocks = config.Bind("Skills", "Primary Stocks", 1, "Max Stocks for Mithrix's Weapon Slam. Vanilla: 1");
       SecStocks = config.Bind("Skills", "Secondary Stocks", 1, "Max Stocks for Mithrix's Dash Attack. Vanilla: 1");
-      UtilStocks = config.Bind("Skills", "Util Stocks", 2, "Max Stocks for Mithrix's Dash. Vanilla: 2");
+      UtilStocks = config.Bind("Skills", "Util Stocks", 4, "Max Stocks for Mithrix's Dash. Vanilla: 2");
       PrimCD = config.Bind("Skills", "Primary Cooldown", 3f, "Cooldown for Mithrix's Weapon Slam. Vanilla: 4");
       SecCD = config.Bind("Skills", "Secondary Cooldown", 4f, "Cooldown for Mithrix's Dash Attack. Vanilla: 5");
       UtilCD = config.Bind("Skills", "Util Cooldown", 2f, "Cooldown for Mithrix's Dash. Vanilla: 3");
-      SpecialCD = config.Bind("Skills", "Special Cooldown", 45f, "Cooldown for Mithrix's Jump Attack. Vanilla: 30");
+      SpecialCD = config.Bind("Skills", "Special Cooldown", 30f, "Cooldown for Mithrix's Jump Attack. Vanilla: 30");
 
       P2UltCount = config.Bind("New Skills", "P2 Ult Bursts", 5, "Total times the shrapnel waves fire in phase 2 ultimate. Vanilla: N/A");
       P2UltOrbCount = config.Bind("New Skills", "P2 Ult Waves", 12, "Total shrapnel waves and golem projectiles fired in a circle in phase 2 ultimate. Vanilla: N/A");
@@ -137,10 +137,6 @@ namespace UmbralMithrix
       SuperShardCD = config.Bind("New Skills", "Super Shard CD", 2f, "How long it takes for Mithrix to fire super shards again. Vanilla: N/A");
 
       SlamOrbProjectileCount = config.Bind("Skill Mods", "Orb Projectile Count", 6, "Orbs fired by weapon slam in a circle. Vanilla: N/A");
-      SlamProjectileCount = config.Bind("Skill Mods", "Slam Projectile Count", 8, "Projectiles (Golem, Exploder, Shards) fired by weapon slam in a circle. Vanilla: N/A");
-      BashProjectileCount = config.Bind("Skill Mods", "Bash Projectile Count", 6, "Projectiles (Exploder and Shards) fired by sprint bash in a cone. Vanilla: N/A");
-      DashProjectileCount = config.Bind("Skill Mods", "Dash Projectile Count", 4, "Projectiles (Golem, Exploder, Shards) fired by dash in a cone. Vanilla: N/A");
-      SkyleapProjectileCount = config.Bind("Skill Mods", "Skyleap Projectile Count", 24, "Projectiles (Golem and Exploder orbs) fired by skyleap in a circle. Vanilla: N/A");
       LunarShardAdd = config.Bind("Skill Mods", "Shard Add Count", 2, "Bonus shards added to each shot of lunar shards. Vanilla: N/A");
       UltimateWaves = config.Bind("Skill Mods", "P3 Ult Lines", 5, "Total lines in ultimate per burst. Vanilla: 4");
       UltimateCount = config.Bind("Skill Mods", "P3 Ult Bursts", 6, "Total times the ultimate fires. Vanilla: 4");
@@ -209,10 +205,6 @@ namespace UmbralMithrix
 
       // Skill Mods
       ModSettingsManager.AddOption(new IntSliderOption(SlamOrbProjectileCount, new IntSliderConfig() { min = 0, max = 16 }));
-      ModSettingsManager.AddOption(new IntSliderOption(SlamProjectileCount, new IntSliderConfig() { min = 0, max = 16 }));
-      ModSettingsManager.AddOption(new IntSliderOption(BashProjectileCount, new IntSliderConfig() { min = 0, max = 16 }));
-      ModSettingsManager.AddOption(new IntSliderOption(DashProjectileCount, new IntSliderConfig() { min = 0, max = 16 }));
-      ModSettingsManager.AddOption(new IntSliderOption(SkyleapProjectileCount, new IntSliderConfig() { min = 0, max = 72 }));
       ModSettingsManager.AddOption(new IntSliderOption(LunarShardAdd, new IntSliderConfig() { min = 1, max = 5 }));
       ModSettingsManager.AddOption(new IntSliderOption(UltimateWaves, new IntSliderConfig() { min = 4, max = 18 }));
       ModSettingsManager.AddOption(new StepSliderOption(UltimateDuration, new StepSliderConfig() { min = 5, max = 10, increment = 0.25f }));
