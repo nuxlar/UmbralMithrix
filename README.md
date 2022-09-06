@@ -1,15 +1,27 @@
 # Umbral Mithrix
 
-Accursed Mithrix **reworked** variant with clones and new Phase 4 (https://thunderstore.io/package/Nuxlar/MithrixTheAccursed/).
+Accursed Mithrix **reworked** variant with clones and new Phase 4 (For more info on the base mod https://thunderstore.io/package/Nuxlar/MithrixTheAccursed/).
 
 Phase info:
 
 - Phase 1 Bash and Slam spawn a deteriorating glass clone with full damage and a trick up their sleeve, Dash is now a Blink.
 - Phase 2 2 glass clones split off from the shadow after skyleap.
-- Phase 3 The shadow splits into 2 (66% HP Each for 1-2 players).
+- Phase 3 The shadow splits into 2 (50% HP Each for 1-2 players).
 - Phase 4 The shadow becomes invulnerable and summons shadows of his enemies, survive until the shadow's shield falls, it'll slowly start stealing items destroy him quickly.
 
+## How to Activate
+There's a mountain shrine near the escape ship to the right when you exit the tunnel. Hit the shrine if you want the challenge of Umbral Mithrix or don't for the vanilla Mithrix experience.
+
+![moon shrine](https://i.ibb.co/0hDhxZF/moonshrine.png)
+
 ## Changelog
+**1.1.1**
+
+- Makes README more clear
+- Reduces Phase 3 HP percentage
+- Makes new item for Umbra-fication so it doesn't conflict with other vengeance mods (Cheers to Moffein)
+- Fixes Phase 4 buggin out sometimes
+- Fixes UmbralMithrix staying activated after hitting the moon shrine
 
 **1.1.0**
 

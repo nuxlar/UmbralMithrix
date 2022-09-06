@@ -136,7 +136,6 @@ namespace UmbralMithrix
       SuperShardCount = config.Bind("New Skills", "Super Shard Stocks", 3, "How many super shards Mithrix can fire before CD. Vanilla: N/A");
       SuperShardCD = config.Bind("New Skills", "Super Shard CD", 2f, "How long it takes for Mithrix to fire super shards again. Vanilla: N/A");
 
-      SlamOrbProjectileCount = config.Bind("Skill Mods", "Orb Projectile Count", 6, "Orbs fired by weapon slam in a circle. Vanilla: N/A");
       LunarShardAdd = config.Bind("Skill Mods", "Shard Add Count", 2, "Bonus shards added to each shot of lunar shards. Vanilla: N/A");
       UltimateWaves = config.Bind("Skill Mods", "P3 Ult Lines", 5, "Total lines in ultimate per burst. Vanilla: 4");
       UltimateCount = config.Bind("Skill Mods", "P3 Ult Bursts", 6, "Total times the ultimate fires. Vanilla: 4");
@@ -204,7 +203,6 @@ namespace UmbralMithrix
       ModSettingsManager.AddOption(new StepSliderOption(SuperShardCD, new StepSliderConfig() { min = 1, max = 5, increment = 0.25f }));
 
       // Skill Mods
-      ModSettingsManager.AddOption(new IntSliderOption(SlamOrbProjectileCount, new IntSliderConfig() { min = 0, max = 16 }));
       ModSettingsManager.AddOption(new IntSliderOption(LunarShardAdd, new IntSliderConfig() { min = 1, max = 5 }));
       ModSettingsManager.AddOption(new IntSliderOption(UltimateWaves, new IntSliderConfig() { min = 4, max = 18 }));
       ModSettingsManager.AddOption(new StepSliderOption(UltimateDuration, new StepSliderConfig() { min = 5, max = 10, increment = 0.25f }));

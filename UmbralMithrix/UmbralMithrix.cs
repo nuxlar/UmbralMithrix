@@ -8,7 +8,8 @@ using R2API;
 using R2API.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using MonoMod.Cil;
+using Mono.Cecil.Cil;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -16,14 +17,15 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.1.0")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.1.1")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
     {
         "LanguageAPI",
         "PrefabAPI",
-        "ContentAddition"
+        "ContentAddition",
+        "ItemAPI"
     })]
 
   public class MithrixTheAccursed : BaseUnityPlugin
@@ -34,6 +36,7 @@ namespace UmbralMithrix
     bool shrineActivated = false;
     bool doppelEventHasTriggered = false;
     HashSet<ItemIndex> doppelBlacklist = new();
+    ItemDef UmbralItem;
     GameObject Mithrix = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherBody.prefab").WaitForCompletion();
     GameObject MithrixHurt = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherHurtBody.prefab").WaitForCompletion();
     GameObject BrotherHaunt = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/BrotherHaunt/BrotherHauntBody.prefab").WaitForCompletion();
@@ -48,6 +51,8 @@ namespace UmbralMithrix
     {
       ModConfig.InitConfig(Config);
       AddContent();
+      CreateDoppelItem();
+      On.RoR2.Run.Start += OnRunStart;
       On.RoR2.CharacterBody.OnInventoryChanged += OnInventoryChanged;
       On.RoR2.ShrineBossBehavior.AddShrineStack += AddShrineStack;
       On.RoR2.Stage.Start += StageStart;
@@ -64,7 +69,6 @@ namespace UmbralMithrix
       On.EntityStates.BrotherMonster.SprintBash.OnEnter += SprintBashOnEnter;
       On.EntityStates.BrotherMonster.WeaponSlam.OnEnter += WeaponSlamOnEnter;
       On.EntityStates.BrotherMonster.WeaponSlam.OnEnter += CleanupPillar;
-      On.EntityStates.BrotherMonster.WeaponSlam.FixedUpdate += WeaponSlamFixedUpdate;
       On.EntityStates.BrotherMonster.Weapon.FireLunarShards.OnEnter += FireLunarShardsOnEnter;
       On.EntityStates.BrotherMonster.FistSlam.OnEnter += FistSlamOnEnter;
       On.EntityStates.BrotherMonster.FistSlam.FixedUpdate += FistSlamFixedUpdate;
@@ -104,13 +108,13 @@ namespace UmbralMithrix
       MithrixMotor.airControl = ModConfig.aircontrol.Value;
       MithrixMotor.jumpCount = ModConfig.jumpcount.Value;
 
-      MithrixGlassBody.baseDamage = (ModConfig.basedamage.Value) * 100 / 4;
-      MithrixGlassBody.levelDamage = (ModConfig.leveldamage.Value) * 100 / 4;
+      MithrixGlassBody.baseDamage = ModConfig.basedamage.Value;
+      MithrixGlassBody.levelDamage = ModConfig.leveldamage.Value;
 
-      MithrixBody.baseMaxHealth = (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 10;
-      MithrixBody.levelMaxHealth = (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 10;
-      MithrixBody.baseDamage = (ModConfig.basedamage.Value) * 100 / 4;
-      MithrixBody.levelDamage = (ModConfig.leveldamage.Value) * 100 / 4;
+      MithrixBody.baseMaxHealth = ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier);
+      MithrixBody.levelMaxHealth = ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier);
+      MithrixBody.baseDamage = ModConfig.basedamage.Value;
+      MithrixBody.levelDamage = ModConfig.leveldamage.Value;
 
       MithrixBody.baseAttackSpeed = ModConfig.baseattackspeed.Value;
       MithrixBody.baseMoveSpeed = ModConfig.basespeed.Value + (ModConfig.basespeed.Value * mobilityMultiplier);
@@ -193,8 +197,8 @@ namespace UmbralMithrix
       CharacterBody MithrixBody = Mithrix.GetComponent<CharacterBody>();
       CharacterDirection MithrixDirection = Mithrix.GetComponent<CharacterDirection>();
 
-      MithrixBody.baseMaxHealth = ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier);
-      MithrixBody.levelMaxHealth = ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier);
+      MithrixBody.baseMaxHealth = (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 10;
+      MithrixBody.levelMaxHealth = (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 10;
 
       MithrixBody.baseMoveSpeed = ModConfig.basespeed.Value + (ModConfig.basespeed.Value * mobilityMultiplier);
       MithrixBody.baseAcceleration = ModConfig.acceleration.Value + (ModConfig.acceleration.Value * mobilityMultiplier);
@@ -223,8 +227,8 @@ namespace UmbralMithrix
       CharacterBody MithrixBody = Mithrix.GetComponent<CharacterBody>();
       CharacterDirection MithrixDirection = Mithrix.GetComponent<CharacterDirection>();
 
-      MithrixBody.baseMaxHealth = playerCount > 2 ? ((ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 10) / 1.5f : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 10;
-      MithrixBody.levelMaxHealth = playerCount > 2 ? ((ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 10) / 1.5f : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 10;
+      MithrixBody.baseMaxHealth = playerCount > 2 ? ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier) : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 2;
+      MithrixBody.levelMaxHealth = playerCount > 2 ? ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier) : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 2;
 
       MithrixBody.baseMoveSpeed = ModConfig.basespeed.Value + (ModConfig.basespeed.Value * mobilityMultiplier);
       MithrixBody.baseAcceleration = ModConfig.acceleration.Value + (ModConfig.acceleration.Value * mobilityMultiplier);
@@ -244,10 +248,10 @@ namespace UmbralMithrix
       else
         hpMultiplier = (ModConfig.phase4LoopHPScaling.Value * Run.instance.loopClearCount) + (ModConfig.phase4PlayerHPScaling.Value * playerCount);
       CharacterBody MithrixHurtBody = MithrixHurt.GetComponent<CharacterBody>();
-      MithrixHurtBody.baseMaxHealth = Run.instance.loopClearCount > 1 ? ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier) : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 5;
-      MithrixHurtBody.levelMaxHealth = Run.instance.loopClearCount > 1 ? ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier) : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 5;
-      MithrixHurtBody.baseDamage = (ModConfig.basedamage.Value) * 100 / 4;
-      MithrixHurtBody.levelDamage = (ModConfig.leveldamage.Value) * 100 / 4;
+      MithrixHurtBody.baseMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 10 : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 5;
+      MithrixHurtBody.levelMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 10 : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 5;
+      MithrixHurtBody.baseDamage = ModConfig.basedamage.Value;
+      MithrixHurtBody.levelDamage = ModConfig.leveldamage.Value;
 
       MithrixHurtBody.baseArmor = ModConfig.basearmor.Value;
       SkillLocator skillLocator = MithrixHurt.GetComponent<SkillLocator>();
@@ -289,11 +293,90 @@ namespace UmbralMithrix
       ContentAddition.AddSurvivorDef(mitchell);
       **/
     }
+    private void CreateDoppelItem()
+    {
+      LanguageAPI.Add("UMBRALMITHRIX_UMBRAL_ITEM", "Origin Bonus");
+      LanguageAPI.Add("UMBRALMITHRIX_UMBRAL_PICKUP", "For Mithrix ONLY >:(");
+      LanguageAPI.Add("UMBRALMITHRIX_UMBRAL_DESC", "Funny umbra skin");
+
+      LanguageAPI.Add("UMBRALMITHRIX_UMBRAL_SUBTITLENAMETOKEN", "The Collective");
+      LanguageAPI.Add("UMBRALMITHRIX_UMBRAL_MODIFIER", "Umbral");
+
+      UmbralItem = ScriptableObject.CreateInstance<ItemDef>();
+      UmbralItem.name = "UmbralMithrixUmbralItem";
+      UmbralItem.deprecatedTier = ItemTier.NoTier;
+      UmbralItem.nameToken = "UMBRALMITHRIX_UMBRAL_NAME";
+      UmbralItem.pickupToken = "UMBRALMITHRIX_UMBRAL_PICKUP";
+      UmbralItem.descriptionToken = "UMBRALMITHRIX_UMBRAL_DESC";
+      // UmbralItem.tags = new ItemTag[] { ItemTag.WorldUnique, ItemTag.BrotherBlacklist, ItemTag.CannotSteal };
+      ItemDisplayRule[] idr = new ItemDisplayRule[0];
+      //ContentAddition.AddItemDef(UmbralItem);
+      ItemAPI.Add(new CustomItem(UmbralItem, idr));
+
+      On.RoR2.CharacterBody.GetSubtitle += (orig, self) =>
+      {
+        if (self.inventory && self.inventory.GetItemCount(UmbralItem) > 0)
+        {
+          return Language.GetString("UMBRALMITHRIX_UMBRAL_SUBTITLENAMETOKEN");
+        }
+        return orig(self);
+      };
+
+      On.RoR2.Util.GetBestBodyName += (orig, bodyObject) =>
+      {
+        string toReturn = orig(bodyObject);
+        CharacterBody cb = bodyObject.GetComponent<CharacterBody>();
+        if (cb && cb.inventory && cb.inventory.GetItemCount(UmbralItem) > 0)
+        {
+          toReturn = Language.GetString("UMBRALMITHRIX_UMBRAL_MODIFIER") + " " + toReturn; ;
+        }
+        return toReturn;
+      };
+
+
+      IL.RoR2.CharacterBody.UpdateAllTemporaryVisualEffects += (il) =>
+      {
+        ILCursor c = new ILCursor(il);
+        c.GotoNext(
+                     x => x.MatchLdsfld(typeof(RoR2Content.Items), "InvadingDoppelganger")
+                    );
+        c.Index += 2;
+        c.Emit(OpCodes.Ldarg_0);
+        c.EmitDelegate<Func<int, CharacterBody, int>>((vengeanceCount, self) =>
+                {
+                  int toReturn = vengeanceCount;
+                  if (self.inventory)
+                  {
+                    toReturn += self.inventory.GetItemCount(UmbralItem);
+                  }
+                  return toReturn;
+                });
+      };
+
+      IL.RoR2.CharacterModel.UpdateOverlays += (il) =>
+      {
+        ILCursor c = new ILCursor(il);
+        c.GotoNext(
+                   x => x.MatchLdsfld(typeof(RoR2Content.Items), "InvadingDoppelganger")
+                  );
+        c.Index += 2;
+        c.Emit(OpCodes.Ldarg_0);
+        c.EmitDelegate<Func<int, CharacterModel, int>>((vengeanceCount, self) =>
+              {
+                int toReturn = vengeanceCount;
+                if (self.body && self.body.inventory)
+                {
+                  toReturn += self.body.inventory.GetItemCount(UmbralItem);
+                }
+                return toReturn;
+              });
+      };
+    }
 
     private void OnInventoryChanged(On.RoR2.CharacterBody.orig_OnInventoryChanged orig, CharacterBody self)
     {
       orig(self);
-      if (NetworkServer.active && self.inventory && self.inventory.GetItemCount(RoR2Content.Items.InvadingDoppelganger) > 0 && phaseCounter == 3 && shrineActivated)
+      if (NetworkServer.active && self.inventory && self.inventory.GetItemCount(UmbralItem) > 0 && phaseCounter == 3 && shrineActivated)
       {
         // Remove Blacklisted Items
         foreach (ItemIndex item in doppelBlacklist)
@@ -337,7 +420,11 @@ namespace UmbralMithrix
       else
         orig(self, interactor);
     }
-
+    private void OnRunStart(On.RoR2.Run.orig_Start orig, Run self)
+    {
+      shrineActivated = false;
+      orig(self);
+    }
     // Prevent freezing from affecting Mithrix after 10 stages or if the config is enabled
     private void FrozenStateOnEnter(On.EntityStates.FrozenState.orig_OnEnter orig, EntityStates.FrozenState self)
     {
@@ -413,14 +500,17 @@ namespace UmbralMithrix
       {
         // Make Mithrix an Umbra
         if (body.name == "BrotherBody(Clone)" || body.name == "BrotherHurtBody(Clone)" || body.name == "BrotherGlassBody(Clone)")
-          self.inventory.GiveItemString(RoR2Content.Items.InvadingDoppelganger.name);
+          self.inventory.GiveItemString(UmbralItem.name);
         if (self.name == "BrotherHurtMaster(Clone)")
         {
           body.AddBuff(RoR2Content.Buffs.Immune);
           if (!doppelEventHasTriggered)
             RoR2.Artifacts.DoppelgangerInvasionManager.PerformInvasion(RoR2Application.rng);
           doppelEventHasTriggered = true;
-          Task.Delay(20000 / Run.instance.loopClearCount).ContinueWith(o => { body.RemoveBuff(RoR2Content.Buffs.Immune); });
+          if (Run.instance.loopClearCount != 0)
+            Task.Delay(20000 / Run.instance.loopClearCount).ContinueWith(o => { body.RemoveBuff(RoR2Content.Buffs.Immune); });
+          else
+            Task.Delay(20000).ContinueWith(o => { body.RemoveBuff(RoR2Content.Buffs.Immune); });
         }
       }
     }
@@ -683,46 +773,6 @@ namespace UmbralMithrix
       }
       orig(self);
     }
-    private void WeaponSlamFixedUpdate(On.EntityStates.BrotherMonster.WeaponSlam.orig_FixedUpdate orig, WeaponSlam self)
-    {
-      if (shrineActivated)
-      {
-        if (self.isAuthority)
-        {
-          if (self.hasDoneBlastAttack)
-          {
-            Logger.LogDebug("blast attack done");
-            if (self.modelTransform)
-            {
-              if (hasfired == false)
-              {
-                hasfired = true;
-                Logger.LogDebug("modeltransformed");
-                int orbCount = ModConfig.SlamOrbProjectileCount.Value;
-                int projectileCount = ModConfig.SlamProjectileCount.Value;
-                if (phaseCounter == 0)
-                {
-                  orbCount = ModConfig.SlamOrbProjectileCount.Value / 2;
-                  projectileCount = ModConfig.SlamProjectileCount.Value / 2;
-                }
-                float num = 360f / orbCount;
-                float num2 = 360f / projectileCount;
-                Vector3 point = Vector3.ProjectOnPlane(self.inputBank.aimDirection, Vector3.up);
-                Transform transform2 = self.FindModelChild(WeaponSlam.muzzleString);
-                Vector3 position = transform2.position;
-                Vector3 bodyPosition = self.characterBody.transform.position;
-                for (int i = 0; i < orbCount; i++)
-                {
-                  Vector3 forward = Quaternion.AngleAxis(num * i, Vector3.up) * point;
-                  ProjectileManager.instance.FireProjectile(FistSlam.waveProjectilePrefab, position, Util.QuaternionSafeLookRotation(forward), self.gameObject, self.characterBody.damage * FistSlam.waveProjectileDamageCoefficient, FistSlam.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
-                }
-              }
-            }
-          }
-        }
-      }
-      orig(self);
-    }
 
     private void FireLunarShardsOnEnter(On.EntityStates.BrotherMonster.Weapon.FireLunarShards.orig_OnEnter orig, FireLunarShards self)
     {
@@ -844,7 +894,12 @@ namespace UmbralMithrix
     private void SpellChannelEnterStateOnEnter(On.EntityStates.BrotherMonster.SpellChannelEnterState.orig_OnEnter orig, SpellChannelEnterState self)
     {
       if (shrineActivated)
-        SpellChannelEnterState.duration = 20 / Run.instance.loopClearCount;
+      {
+        if (Run.instance.loopClearCount == 0)
+          SpellChannelEnterState.duration = 20;
+        else
+          SpellChannelEnterState.duration = 20 / Run.instance.loopClearCount;
+      }
       orig(self);
     }
 
@@ -852,9 +907,12 @@ namespace UmbralMithrix
     {
       if (shrineActivated)
       {
-        SpellChannelState.stealInterval = 0.75f / Run.instance.loopClearCount;
+        int loopClearCount = 1;
+        if (Run.instance.loopClearCount != 0)
+          loopClearCount = Run.instance.loopClearCount;
+        SpellChannelState.stealInterval = 0.75f / loopClearCount;
         SpellChannelState.delayBeforeBeginningSteal = 0.0f;
-        SpellChannelState.maxDuration = 15f / Run.instance.loopClearCount;
+        SpellChannelState.maxDuration = 15f / loopClearCount;
         self.PlayAnimation("Body", "SpellChannel");
         int num = (int)Util.PlaySound("Play_moonBrother_phase4_itemSuck_start", self.gameObject);
         self.spellChannelChildTransform = self.FindModelChild("SpellChannel");
