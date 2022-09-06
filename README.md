@@ -15,6 +15,11 @@ There's a mountain shrine near the escape ship to the right when you exit the tu
 ![moon shrine](https://i.ibb.co/0hDhxZF/moonshrine.png)
 
 ## Changelog
+**1.1.2**
+
+- Fixes umbras getting blacklist items
+- Fixes dios making Mithrix invulnerable for 20 secs
+
 **1.1.1**
 
 - Makes README more clear

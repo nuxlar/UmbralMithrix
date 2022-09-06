@@ -17,7 +17,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.1.1")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.1.2")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -376,7 +376,7 @@ namespace UmbralMithrix
     private void OnInventoryChanged(On.RoR2.CharacterBody.orig_OnInventoryChanged orig, CharacterBody self)
     {
       orig(self);
-      if (NetworkServer.active && self.inventory && self.inventory.GetItemCount(UmbralItem) > 0 && phaseCounter == 3 && shrineActivated)
+      if (NetworkServer.active && self.inventory && shrineActivated && phaseCounter == 3 && (self.inventory.GetItemCount(UmbralItem) > 0 || self.inventory.GetItemCount(RoR2Content.Items.InvadingDoppelganger) > 0))
       {
         // Remove Blacklisted Items
         foreach (ItemIndex item in doppelBlacklist)
@@ -423,6 +423,7 @@ namespace UmbralMithrix
     private void OnRunStart(On.RoR2.Run.orig_Start orig, Run self)
     {
       shrineActivated = false;
+      CreateBlacklist();
       orig(self);
     }
     // Prevent freezing from affecting Mithrix after 10 stages or if the config is enabled
@@ -503,7 +504,8 @@ namespace UmbralMithrix
           self.inventory.GiveItemString(UmbralItem.name);
         if (self.name == "BrotherHurtMaster(Clone)")
         {
-          body.AddBuff(RoR2Content.Buffs.Immune);
+          if (self.inventory.GetItemCount(RoR2Content.Items.ExtraLifeConsumed.itemIndex) == 0)
+            body.AddBuff(RoR2Content.Buffs.Immune);
           if (!doppelEventHasTriggered)
             RoR2.Artifacts.DoppelgangerInvasionManager.PerformInvasion(RoR2Application.rng);
           doppelEventHasTriggered = true;
@@ -596,7 +598,6 @@ namespace UmbralMithrix
         Logger.LogMessage("Accursing the King of Nothing");
         AdjustBaseSkills();
         AdjustBaseStats();
-        CreateBlacklist();
       }
       orig(self);
     }
