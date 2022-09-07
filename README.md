@@ -10,11 +10,18 @@ Phase info:
 - Phase 4 The shadow becomes invulnerable and summons shadows of his enemies, survive until the shadow's shield falls, it'll slowly start stealing items destroy him quickly.
 
 ## How to Activate
+
 There's a mountain shrine near the escape ship to the right when you exit the tunnel. Hit the shrine if you want the challenge of Umbral Mithrix or don't for the vanilla Mithrix experience.
 
 ![moon shrine](https://i.ibb.co/0hDhxZF/moonshrine.png)
 
 ## Changelog
+
+**1.1.3**
+
+- Fixes vanilla mithrix not working after hitting the shrine on a previous run
+- Updates Vanilla values in config
+
 **1.1.2**
 
 - Fixes umbras getting blacklist items

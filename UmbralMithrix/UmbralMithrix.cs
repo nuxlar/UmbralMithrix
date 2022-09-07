@@ -28,7 +28,7 @@ namespace UmbralMithrix
         "ItemAPI"
     })]
 
-  public class MithrixTheAccursed : BaseUnityPlugin
+  public class UmbralMithrix : BaseUnityPlugin
   {
     bool hasfired;
     int phaseCounter = 0;
@@ -38,6 +38,7 @@ namespace UmbralMithrix
     HashSet<ItemIndex> doppelBlacklist = new();
     ItemDef UmbralItem;
     GameObject Mithrix = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherBody.prefab").WaitForCompletion();
+    SkillDef originalDash;
     GameObject MithrixHurt = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherHurtBody.prefab").WaitForCompletion();
     GameObject BrotherHaunt = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/BrotherHaunt/BrotherHauntBody.prefab").WaitForCompletion();
     SpawnCard MithrixCard = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Base/Brother/cscBrother.asset").WaitForCompletion();
@@ -81,6 +82,67 @@ namespace UmbralMithrix
       On.EntityStates.BrotherMonster.StaggerLoop.OnEnter += StaggerLoopOnEnter;
       On.EntityStates.BrotherMonster.TrueDeathState.OnEnter += TrueDeathStateOnEnter;
       // On.EntityStates.BrotherHaunt.FireRandomProjectiles.OnEnter += FireRandomProjectiles;
+      originalDash = Mithrix.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef;
+    }
+
+    private void RevertToVanillaStats()
+    {
+      CharacterBody MithrixBody = Mithrix.GetComponent<CharacterBody>();
+      CharacterDirection MithrixDirection = Mithrix.GetComponent<CharacterDirection>();
+      CharacterMotor MithrixMotor = Mithrix.GetComponent<CharacterMotor>();
+
+      MithrixMotor.mass = 900;
+      MithrixMotor.airControl = 0.25f;
+      MithrixMotor.jumpCount = 1;
+
+      MithrixBody.baseMaxHealth = 1000;
+      MithrixBody.levelMaxHealth = 300;
+      MithrixBody.baseDamage = 16;
+      MithrixBody.levelDamage = 3.2f;
+
+      MithrixBody.baseAttackSpeed = 1;
+      MithrixBody.baseMoveSpeed = 15;
+      MithrixBody.baseAcceleration = 45;
+      MithrixBody.baseJumpPower = 25;
+      MithrixDirection.turnSpeed = 270;
+
+      MithrixBody.baseArmor = 20;
+
+      ProjectileSteerTowardTarget component = FireLunarShards.projectilePrefab.GetComponent<ProjectileSteerTowardTarget>();
+      component.rotationSpeed = 20;
+      ProjectileDirectionalTargetFinder component2 = FireLunarShards.projectilePrefab.GetComponent<ProjectileDirectionalTargetFinder>();
+      component2.lookRange = 80;
+      component2.lookCone = 90;
+      component2.allowTargetLoss = true;
+
+      WeaponSlam.duration = 3.5f;
+      HoldSkyLeap.duration = 3;
+      ExitSkyLeap.waveProjectileCount = 12;
+      ExitSkyLeap.recastChance = 0;
+      UltChannelState.waveProjectileCount = 8;
+      UltChannelState.maxDuration = 8;
+      UltChannelState.totalWaves = 4;
+    }
+
+    private void RevertToVanillaSkills()
+    {
+      SkillLocator SklLocate = Mithrix.GetComponent<SkillLocator>();
+      SkillFamily Hammer = SklLocate.primary.skillFamily;
+      SkillDef HammerChange = Hammer.variants[0].skillDef;
+      HammerChange.baseRechargeInterval = 4;
+      HammerChange.baseMaxStock = 1;
+
+      SkillFamily Bash = SklLocate.secondary.skillFamily;
+      SkillDef BashChange = Bash.variants[0].skillDef;
+      BashChange.baseRechargeInterval = 5;
+      BashChange.baseMaxStock = 1;
+
+      SkillFamily Dash = SklLocate.utility.skillFamily;
+      Dash.variants[0].skillDef = originalDash;
+
+      SkillFamily Ult = SklLocate.special.skillFamily;
+      SkillDef UltChange = Ult.variants[0].skillDef;
+      UltChange.baseRechargeInterval = 30;
     }
 
     private void AdjustBaseStats()
@@ -424,6 +486,8 @@ namespace UmbralMithrix
     {
       shrineActivated = false;
       CreateBlacklist();
+      RevertToVanillaStats();
+      RevertToVanillaSkills();
       orig(self);
     }
     // Prevent freezing from affecting Mithrix after 10 stages or if the config is enabled
@@ -444,7 +508,7 @@ namespace UmbralMithrix
     private void ImpBlink(On.EntityStates.ImpMonster.BlinkState.orig_OnEnter orig, EntityStates.ImpMonster.BlinkState self)
     {
       if (self.characterBody.name == "BrotherBody(Clone)" || self.characterBody.name == "BrotherGlassBody(Clone)")
-        EntityStates.ImpMonster.BlinkState.blinkDistance = 35;
+        EntityStates.ImpMonster.BlinkState.blinkDistance = 50;
       else
         EntityStates.ImpMonster.BlinkState.blinkDistance = 25;
       orig(self);

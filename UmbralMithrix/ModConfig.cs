@@ -107,8 +107,8 @@ namespace UmbralMithrix
       phase2PlayerMobilityScaling = config.Bind("Player Scaling", "P2 Mobility Scaling", 0f, "Mobility boost percentage for Phase 2 PER PLAYER");
       phase3PlayerMobilityScaling = config.Bind("Player Scaling", "P3 Mobility Scaling", 0f, "Mobility boost percentage for Phase 3 PER PLAYER");
 
-      basehealth = config.Bind("Stats", "Base Health", 1000f, "Vanilla: 1400");
-      levelhealth = config.Bind("Stats", "Level Health", 325f, "Health gained per level. Vanilla: 420");
+      basehealth = config.Bind("Stats", "Base Health", 1000f, "Vanilla: 1000");
+      levelhealth = config.Bind("Stats", "Level Health", 325f, "Health gained per level. Vanilla: 300");
       basedamage = config.Bind("Stats", "Base Damage", 15f, "Vanilla: 16");
       leveldamage = config.Bind("Stats", "Level Damage", 2.75f, "Damage gained per level. Vanilla: 3.2");
       basearmor = config.Bind("Stats", "Base Armor", 30f, "Vanilla: 20");
