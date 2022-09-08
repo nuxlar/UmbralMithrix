@@ -17,7 +17,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.1.2")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.1.3")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -88,6 +88,7 @@ namespace UmbralMithrix
     private void RevertToVanillaStats()
     {
       CharacterBody MithrixBody = Mithrix.GetComponent<CharacterBody>();
+      CharacterBody MithrixHurtBody = MithrixHurt.GetComponent<CharacterBody>();
       CharacterDirection MithrixDirection = Mithrix.GetComponent<CharacterDirection>();
       CharacterMotor MithrixMotor = Mithrix.GetComponent<CharacterMotor>();
 
@@ -99,6 +100,12 @@ namespace UmbralMithrix
       MithrixBody.levelMaxHealth = 300;
       MithrixBody.baseDamage = 16;
       MithrixBody.levelDamage = 3.2f;
+
+      // Mithrix Hurt
+      MithrixHurtBody.baseMaxHealth = 1400;
+      MithrixHurtBody.levelMaxHealth = 420;
+      MithrixHurtBody.baseArmor = 20;
+      // Mithrix Hurt
 
       MithrixBody.baseAttackSpeed = 1;
       MithrixBody.baseMoveSpeed = 15;
@@ -127,6 +134,13 @@ namespace UmbralMithrix
     private void RevertToVanillaSkills()
     {
       SkillLocator SklLocate = Mithrix.GetComponent<SkillLocator>();
+      SkillLocator skillLocator = MithrixHurt.GetComponent<SkillLocator>();
+      // MithrixHurt
+      SkillFamily fireLunarShardsHurt = skillLocator.primary.skillFamily;
+      SkillDef fireLunarShardsHurtSkillDef = fireLunarShardsHurt.variants[0].skillDef;
+      fireLunarShardsHurtSkillDef.baseRechargeInterval = 6;
+      fireLunarShardsHurtSkillDef.baseMaxStock = 12;
+      // Mithrix
       SkillFamily Hammer = SklLocate.primary.skillFamily;
       SkillDef HammerChange = Hammer.variants[0].skillDef;
       HammerChange.baseRechargeInterval = 4;
@@ -218,7 +232,7 @@ namespace UmbralMithrix
       // Replace dash with blink (creating new skilldef so it can be done while midair)
       SkillFamily Dash = SklLocate.utility.skillFamily;
       SkillDef blink = ScriptableObject.CreateInstance<SkillDef>();
-      blink.activationState = new EntityStates.SerializableEntityStateType(typeof(EntityStates.ImpMonster.BlinkState)); ;
+      blink.activationState = new EntityStates.SerializableEntityStateType(typeof(EntityStates.Huntress.MiniBlinkState)); ;
       blink.activationStateMachineName = "Weapon";
       blink.baseMaxStock = ModConfig.UtilStocks.Value;
       blink.baseRechargeInterval = ModConfig.UtilCD.Value;
@@ -310,10 +324,8 @@ namespace UmbralMithrix
       else
         hpMultiplier = (ModConfig.phase4LoopHPScaling.Value * Run.instance.loopClearCount) + (ModConfig.phase4PlayerHPScaling.Value * playerCount);
       CharacterBody MithrixHurtBody = MithrixHurt.GetComponent<CharacterBody>();
-      MithrixHurtBody.baseMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 10 : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 5;
-      MithrixHurtBody.levelMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 10 : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 5;
-      MithrixHurtBody.baseDamage = ModConfig.basedamage.Value;
-      MithrixHurtBody.levelDamage = ModConfig.leveldamage.Value;
+      MithrixHurtBody.baseMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 10 : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 3;
+      MithrixHurtBody.levelMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 10 : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 3;
 
       MithrixHurtBody.baseArmor = ModConfig.basearmor.Value;
       SkillLocator skillLocator = MithrixHurt.GetComponent<SkillLocator>();
@@ -503,15 +515,6 @@ namespace UmbralMithrix
       if ((self.name == "BrotherBody(Clone)" || self.name == "BrotherHurtBody(Clone)") && buffDef == RoR2Content.Buffs.Nullified && (Run.instance.loopClearCount >= 2 || ModConfig.debuffResistance.Value))
         return;
       orig(self, buffDef, duration);
-    }
-
-    private void ImpBlink(On.EntityStates.ImpMonster.BlinkState.orig_OnEnter orig, EntityStates.ImpMonster.BlinkState self)
-    {
-      if (self.characterBody.name == "BrotherBody(Clone)" || self.characterBody.name == "BrotherGlassBody(Clone)")
-        EntityStates.ImpMonster.BlinkState.blinkDistance = 50;
-      else
-        EntityStates.ImpMonster.BlinkState.blinkDistance = 25;
-      orig(self);
     }
 
     // Change doppel spawn place to the center of the arena if it's Phase 2

@@ -19,8 +19,11 @@ There's a mountain shrine near the escape ship to the right when you exit the tu
 
 **1.1.3**
 
-- Fixes vanilla mithrix not working after hitting the shrine on a previous run
-- Updates Vanilla values in config
+- Fixes vanilla mithrix not working after hitting the shrine on a previous run (both regular and phase 4)
+- Switches Imp Blink with Huntress MiniBlink since u can cheese him by standing at the edge of the map
+- Reduces Phase 4 HP buff (3x instead of 5x)
+- Updates Vanilla description values in config
+- Removes damage config affecting phase 4 mithrix
 
 **1.1.2**
 
