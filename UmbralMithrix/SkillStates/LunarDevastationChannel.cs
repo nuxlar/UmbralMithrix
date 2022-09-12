@@ -45,7 +45,7 @@ public class LunarDevastationChannel : EntityStates.BaseState
     {
       Vector3 forward = Quaternion.AngleAxis(num * idx, Vector3.up) * point;
       ProjectileManager.instance.FireProjectile(golemProjectile, corePosition, Quaternion.LookRotation(forward), this.gameObject, (this.characterBody.damage * FistSlam.waveProjectileDamageCoefficient) / 4, 0f, Util.CheckRoll(this.characterBody.crit, this.characterBody.master), DamageColorIndex.Default, null, -1f);
-      ProjectileManager.instance.FireProjectile(ExitSkyLeap.waveProjectilePrefab, footPosition, Util.QuaternionSafeLookRotation(forward), this.gameObject, this.characterBody.damage * ExitSkyLeap.waveProjectileDamageCoefficient, ExitSkyLeap.waveProjectileForce, Util.CheckRoll(this.characterBody.crit, this.characterBody.master));
+      ProjectileManager.instance.FireProjectile(WeaponSlam.waveProjectilePrefab, footPosition, Util.QuaternionSafeLookRotation(forward), this.gameObject, this.characterBody.damage * WeaponSlam.waveProjectileDamageCoefficient, WeaponSlam.waveProjectileForce, Util.CheckRoll(this.characterBody.crit, this.characterBody.master));
     }
 
   }
@@ -87,11 +87,11 @@ public class LunarDevastationChannel : EntityStates.BaseState
     if ((double)Random.value >= (double)0.5 || this.charges <= 0)
       return;
     this.FireRandomFlameLine();
-    if (elapsed >= 0.5f)
+    if (elapsed >= (float)ModConfig.P2SuperShardInterval.Value)
     {
       Ray aimRay = this.GetAimRay();
-      elapsed = elapsed % 0.5f;
-      for (int i = 0; i < 12; i++)
+      elapsed = elapsed % (float)ModConfig.P2SuperShardInterval.Value;
+      for (int i = 0; i < ModConfig.SuperShardWeight.Value; i++)
       {
         Util.PlaySound(EntityStates.BrotherMonster.Weapon.FireLunarShards.fireSound, this.gameObject);
         ProjectileManager.instance.FireProjectile(FireLunarShards.projectilePrefab, aimRay.origin, Quaternion.LookRotation(aimRay.direction), this.gameObject, this.characterBody.damage * 0.1f / 12f, 0f, Util.CheckRoll(this.characterBody.crit, this.characterBody.master), DamageColorIndex.Default, null, -1f);

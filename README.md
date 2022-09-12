@@ -4,18 +4,32 @@ Accursed Mithrix **reworked** variant with clones and new Phase 4 (For more info
 
 Phase info:
 
-- Phase 1 Bash and Slam spawn a deteriorating glass clone with full damage and a trick up their sleeve, Dash is now a Blink.
+- Phase 1 Bash and Slam spawn a deteriorating glass clone with full damage and a trick up their sleeve (2 for slam).
 - Phase 2 2 glass clones split off from the shadow after skyleap.
 - Phase 3 The shadow splits into 2 (50% HP Each for 1-2 players).
 - Phase 4 The shadow becomes invulnerable and summons shadows of his enemies, survive until the shadow's shield falls, it'll slowly start stealing items destroy him quickly.
 
 ## How to Activate
 
-There's a mountain shrine near the escape ship to the right when you exit the tunnel. Hit the shrine if you want the challenge of Umbral Mithrix or don't for the vanilla Mithrix experience.
+There's an Obelisk where you first spawn on the moon. Activate the Obelisk if you want the challenge of Umbral Mithrix or don't for the vanilla Mithrix experience.
 
-![moon shrine](https://i.ibb.co/0hDhxZF/moonshrine.png)
+![moon obelisk](https://cdn.discordapp.com/attachments/1011187282788765816/1018116657077571595/unknown.png)
+
+## Config Info
+
+The mod is highly configurable. You can edit config values in-game and during runs through Settings -> Mod Options -> UmbralMithrix. Stats are calculated at the start of each phase so if you're blasting through Phase 1 you can make the other phases harder. If the in-game values are too limiting you can edit the modman config to input custom values.
+
+![mod options](https://i.ibb.co/q9fC9jj/Screenshot-2022-09-12-165657.png)
 
 ## Changelog
+
+**1.2.1**
+
+- Changes README
+- Switches Phase 2 Ult wave to the Hammer Slam wave
+- Adds SuperShardWeight to config (how many shards are in 1 super shard)
+- Adds Phase 2 Ult Super Shard Interval to config (how often it fires)
+- Reduces default Super Shard Weight from 12 -> 6 so they're not an insta kill
 
 **1.2.0**
 

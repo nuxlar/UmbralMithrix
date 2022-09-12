@@ -1,7 +1,7 @@
 ﻿{
 	"name": "UmbralMithrix",
-	"version_number": "1.2.0",
-	"website_url": "",
+	"version_number": "1.2.1",
+	"website_url": "https://github.com/nuxlar/UmbralMithrix",
 	"description": "The Umbral King of Nothing uses shadows and clones to overwhelm his enemies.",
 	"dependencies": [
 		"bbepis-BepInExPack-5.4.2102",

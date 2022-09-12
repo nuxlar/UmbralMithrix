@@ -57,6 +57,8 @@ namespace UmbralMithrix
     public static ConfigEntry<float> UtilCD;
     public static ConfigEntry<float> SpecialCD;
 
+    public static ConfigEntry<int> SuperShardWeight;
+    public static ConfigEntry<float> P2SuperShardInterval;
     public static ConfigEntry<int> P2UltCount;
     public static ConfigEntry<int> P2UltOrbCount;
     public static ConfigEntry<float> P2UltDuration;
@@ -132,9 +134,11 @@ namespace UmbralMithrix
       UtilCD = config.Bind("Skills", "Util Cooldown", 2f, "Cooldown for Mithrix's Dash. Vanilla: 3");
       SpecialCD = config.Bind("Skills", "Special Cooldown", 30f, "Cooldown for Mithrix's Jump Attack. Vanilla: 30");
 
+      SuperShardWeight = config.Bind("New Skills", "Super Shards", 6, "How many shards are in 1 super shard. Vanilla: N/A");
       P2UltCount = config.Bind("New Skills", "P2 Ult Bursts", 5, "Total times the shrapnel waves fire in phase 2 ultimate. Vanilla: N/A");
       P2UltOrbCount = config.Bind("New Skills", "P2 Ult Waves", 12, "Total shrapnel waves and golem projectiles fired in a circle in phase 2 ultimate. Vanilla: N/A");
       P2UltDuration = config.Bind("New Skills", "P2 Ult Duration", 8f, "How long phase 2 ultimate lasts. Vanilla: N/A");
+      P2SuperShardInterval = config.Bind("New Skills", "P2 Ult Super Shards", 0.6f, "Interval at which super shards are fired in P2 Ult in seconds. Vanilla: N/A");
       SuperShardCount = config.Bind("New Skills", "Super Shard Stocks", 3, "How many super shards Mithrix can fire before CD. Vanilla: N/A");
       SuperShardCD = config.Bind("New Skills", "Super Shard CD", 2f, "How long it takes for Mithrix to fire super shards again. Vanilla: N/A");
 
@@ -199,6 +203,8 @@ namespace UmbralMithrix
       ModSettingsManager.AddOption(new StepSliderOption(UtilCD, new StepSliderConfig() { min = 1, max = 5, increment = 0.25f }));
       ModSettingsManager.AddOption(new StepSliderOption(SpecialCD, new StepSliderConfig() { min = 10, max = 50, increment = 1f }));
       // New Skills
+      ModSettingsManager.AddOption(new IntSliderOption(SuperShardWeight, new IntSliderConfig() { min = 3, max = 12 }));
+      ModSettingsManager.AddOption(new StepSliderOption(P2SuperShardInterval, new StepSliderConfig() { min = 0.1f, max = 2, increment = 0.1f }));
       ModSettingsManager.AddOption(new IntSliderOption(P2UltCount, new IntSliderConfig() { min = 2, max = 8 }));
       ModSettingsManager.AddOption(new StepSliderOption(P2UltDuration, new StepSliderConfig() { min = 4, max = 12, increment = 0.5f }));
       ModSettingsManager.AddOption(new IntSliderOption(P2UltOrbCount, new IntSliderConfig() { min = 0, max = 12 }));
@@ -216,7 +222,7 @@ namespace UmbralMithrix
       ModSettingsManager.AddOption(new StepSliderOption(ShardRange, new StepSliderConfig() { min = 80, max = 160, increment = 10f }));
       ModSettingsManager.AddOption(new StepSliderOption(ShardCone, new StepSliderConfig() { min = 90f, max = 180, increment = 10f }));
 
-      ModSettingsManager.SetModDescription("The Accursed King of Nothing uses new devastating abilities to cut down his enemies.");
+      ModSettingsManager.SetModDescription("Moon man with shadowws");
     }
   }
 }

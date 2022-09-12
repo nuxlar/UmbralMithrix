@@ -17,7 +17,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.2.0")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.2.1")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -784,7 +784,7 @@ namespace UmbralMithrix
           if (self.characterBody.name == "BrotherGlassBody(Clone)")
           {
             Ray aimRay = self.GetAimRay();
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < ModConfig.SuperShardWeight.Value; i++)
             {
               Util.PlaySound(EntityStates.BrotherMonster.Weapon.FireLunarShards.fireSound, self.gameObject);
               ProjectileManager.instance.FireProjectile(FireLunarShards.projectilePrefab, aimRay.origin, Quaternion.LookRotation(aimRay.direction), self.gameObject, self.characterBody.damage * 0.1f / 12f, 0f, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
@@ -853,7 +853,7 @@ namespace UmbralMithrix
             if ((bool)(UnityEngine.Object)modelChild)
               aimRay.origin = modelChild.position;
             aimRay.direction = Util.ApplySpread(aimRay.direction, 0.0f, self.maxSpread, self.spreadYawScale, self.spreadPitchScale);
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < ModConfig.SuperShardWeight.Value; i++)
             {
               int num = (int)Util.PlaySound(FireLunarShards.fireSound, self.gameObject);
               ProjectileManager.instance.FireProjectile(new FireProjectileInfo()
