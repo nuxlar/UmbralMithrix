@@ -17,7 +17,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.1.3")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.2.0")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -39,6 +39,8 @@ namespace UmbralMithrix
     ItemDef UmbralItem;
     GameObject Mithrix = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherBody.prefab").WaitForCompletion();
     SkillDef originalDash;
+    GameObject Obelisk = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/mysteryspace/MSObelisk.prefab").WaitForCompletion();
+
     GameObject MithrixHurt = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherHurtBody.prefab").WaitForCompletion();
     GameObject BrotherHaunt = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/BrotherHaunt/BrotherHauntBody.prefab").WaitForCompletion();
     SpawnCard MithrixCard = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Base/Brother/cscBrother.asset").WaitForCompletion();
@@ -55,7 +57,8 @@ namespace UmbralMithrix
       CreateDoppelItem();
       On.RoR2.Run.Start += OnRunStart;
       On.RoR2.CharacterBody.OnInventoryChanged += OnInventoryChanged;
-      On.RoR2.ShrineBossBehavior.AddShrineStack += AddShrineStack;
+      On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.OnEnter += ReadyToEndGameOnEnter;
+      On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.FixedUpdate += ReadyToEndGameFixedUpdate;
       On.RoR2.Stage.Start += StageStart;
       On.RoR2.Artifacts.DoppelgangerInvasionManager.CreateDoppelganger += CreateDoppelganger;
       On.RoR2.CharacterMaster.OnBodyStart += CharacterMasterOnBodyStart;
@@ -81,7 +84,6 @@ namespace UmbralMithrix
       On.EntityStates.BrotherMonster.StaggerExit.OnEnter += StaggerExitOnEnter;
       On.EntityStates.BrotherMonster.StaggerLoop.OnEnter += StaggerLoopOnEnter;
       On.EntityStates.BrotherMonster.TrueDeathState.OnEnter += TrueDeathStateOnEnter;
-      // On.EntityStates.BrotherHaunt.FireRandomProjectiles.OnEnter += FireRandomProjectiles;
       originalDash = Mithrix.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef;
     }
 
@@ -231,22 +233,9 @@ namespace UmbralMithrix
 
       // Replace dash with blink (creating new skilldef so it can be done while midair)
       SkillFamily Dash = SklLocate.utility.skillFamily;
-      SkillDef blink = ScriptableObject.CreateInstance<SkillDef>();
-      blink.activationState = new EntityStates.SerializableEntityStateType(typeof(EntityStates.Huntress.MiniBlinkState)); ;
-      blink.activationStateMachineName = "Weapon";
-      blink.baseMaxStock = ModConfig.UtilStocks.Value;
-      blink.baseRechargeInterval = ModConfig.UtilCD.Value;
-      blink.beginSkillCooldownOnSkillEnd = true;
-      blink.canceledFromSprinting = false;
-      blink.cancelSprintingOnActivation = false;
-      blink.fullRestockOnAssign = true;
-      blink.interruptPriority = EntityStates.InterruptPriority.Skill;
-      blink.isCombatSkill = true;
-      blink.mustKeyPress = false;
-      blink.rechargeStock = 1;
-      blink.requiredStock = 1;
-      blink.stockToConsume = 1;
-      Dash.variants[0].skillDef = blink;
+      SkillDef DashChange = Dash.variants[0].skillDef;
+      DashChange.baseMaxStock = ModConfig.UtilStocks.Value;
+      DashChange.baseRechargeInterval = ModConfig.UtilCD.Value;
 
       SkillFamily Ult = SklLocate.special.skillFamily;
       SkillDef UltChange = Ult.variants[0].skillDef;
@@ -450,7 +439,7 @@ namespace UmbralMithrix
     private void OnInventoryChanged(On.RoR2.CharacterBody.orig_OnInventoryChanged orig, CharacterBody self)
     {
       orig(self);
-      if (NetworkServer.active && self.inventory && shrineActivated && phaseCounter == 3 && (self.inventory.GetItemCount(UmbralItem) > 0 || self.inventory.GetItemCount(RoR2Content.Items.InvadingDoppelganger) > 0))
+      if (NetworkServer.active && self.inventory && shrineActivated && phaseCounter == 3 && ModConfig.doppelPhase4.Value && (self.inventory.GetItemCount(UmbralItem) > 0 || self.inventory.GetItemCount(RoR2Content.Items.InvadingDoppelganger) > 0))
       {
         // Remove Blacklisted Items
         foreach (ItemIndex item in doppelBlacklist)
@@ -465,35 +454,45 @@ namespace UmbralMithrix
     {
       orig(self);
       if (self.sceneDef.cachedName == "moon2")
-        SpawnUmbralShrine();
+        SpawnUmbralObelisk();
     }
-    private void SpawnUmbralShrine()
+
+    private void SpawnUmbralObelisk()
     {
-      // 409.8 -157.9 515.9
-      SpawnCard umbralShrineCard = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Base/ShrineBoss/iscShrineBoss.asset").WaitForCompletion();
-      DirectorPlacementRule placementRule = new DirectorPlacementRule();
-      placementRule.placementMode = DirectorPlacementRule.PlacementMode.Direct;
-      GameObject spawnedShrine = umbralShrineCard.DoSpawn(new Vector3(409.8f, -157.9f, 515.9f), Quaternion.identity, new DirectorSpawnRequest(umbralShrineCard, placementRule, Run.instance.runRNG)).spawnedInstance;
-      spawnedShrine.name = "UmbralShrine";
-      NetworkServer.Spawn(spawnedShrine);
+      // 1090.1f, -283.1f, 1138.6f
+      GameObject obelisk = Instantiate(Obelisk, new Vector3(1090.1f, -283.1f, 1138.6f), Quaternion.identity);
+      obelisk.GetComponent<PurchaseInteraction>().NetworkcontextToken = "Summon The Umbral King?";
+      obelisk.name = "UmbralObelisk";
+      obelisk.transform.eulerAngles = new Vector3(0.0f, 66f, 0.0f);
+      NetworkServer.Spawn(obelisk);
     }
-    private void AddShrineStack(On.RoR2.ShrineBossBehavior.orig_AddShrineStack orig, RoR2.ShrineBossBehavior self, Interactor interactor)
+
+    private void ReadyToEndGameOnEnter(On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.orig_OnEnter orig, EntityStates.Interactables.MSObelisk.ReadyToEndGame self)
     {
-      if (self.purchaseInteraction.gameObject.name == "UmbralShrine")
+      if (self.gameObject.name == "UmbralObelisk")
       {
+        self.purchaseInteraction = self.GetComponent<PurchaseInteraction>();
         shrineActivated = true;
+        self.purchaseInteraction.Networkavailable = false;
         Chat.SendBroadcastChat(new Chat.SimpleChatMessage() { baseToken = $"<color=#8826dd>The Umbral King awaits...</color>" });
-        EffectManager.SpawnEffect(LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/ShrineUseEffect"), new EffectData()
-        {
-          origin = this.transform.position,
-          rotation = Quaternion.identity,
-          scale = 1f,
-          color = (Color32)new Color(0.7372549f, 0.9058824f, 0.945098f)
-        }, true);
+        self.GetComponent<ChildLocator>().FindChild(EntityStates.Interactables.MSObelisk.ReadyToEndGame.chargeupChildString).gameObject.SetActive(true);
+        int num = (int)Util.PlaySound(EntityStates.Interactables.MSObelisk.ReadyToEndGame.chargeupSoundString, self.gameObject);
       }
       else
-        orig(self, interactor);
+        orig(self);
     }
+
+    private void ReadyToEndGameFixedUpdate(On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.orig_FixedUpdate orig, EntityStates.Interactables.MSObelisk.ReadyToEndGame self)
+    {
+      if (self.gameObject.name == "UmbralObelisk")
+      {
+        if ((double)self.fixedAge < (double)EntityStates.Interactables.MSObelisk.ReadyToEndGame.chargeupDuration || self.ready)
+          return;
+      }
+      else
+        orig(self);
+    }
+
     private void OnRunStart(On.RoR2.Run.orig_Start orig, Run self)
     {
       shrineActivated = false;
@@ -520,46 +519,51 @@ namespace UmbralMithrix
     // Change doppel spawn place to the center of the arena if it's Phase 2
     private void CreateDoppelganger(On.RoR2.Artifacts.DoppelgangerInvasionManager.orig_CreateDoppelganger orig, CharacterMaster srcCharacterMaster, Xoroshiro128Plus rng)
     {
-      SpawnCard spawnCard = RoR2.Artifacts.DoppelgangerSpawnCard.FromMaster(srcCharacterMaster);
-      if (!(bool)spawnCard)
-        return;
-      Transform transform;
-      DirectorCore.MonsterSpawnDistance input;
-      if ((bool)TeleporterInteraction.instance)
+      if (ModConfig.doppelPhase4.Value && shrineActivated)
       {
-        transform = TeleporterInteraction.instance.transform;
-        input = DirectorCore.MonsterSpawnDistance.Close;
-      }
-      else if (phaseCounter == 3 && shrineActivated)
-      {
-        transform = Mithrix.transform;
-        input = DirectorCore.MonsterSpawnDistance.Close;
+        SpawnCard spawnCard = RoR2.Artifacts.DoppelgangerSpawnCard.FromMaster(srcCharacterMaster);
+        if (!(bool)spawnCard)
+          return;
+        Transform transform;
+        DirectorCore.MonsterSpawnDistance input;
+        if ((bool)TeleporterInteraction.instance)
+        {
+          transform = TeleporterInteraction.instance.transform;
+          input = DirectorCore.MonsterSpawnDistance.Close;
+        }
+        else if (phaseCounter == 3)
+        {
+          transform = Mithrix.transform;
+          input = DirectorCore.MonsterSpawnDistance.Close;
+        }
+        else
+        {
+          transform = srcCharacterMaster.GetBody().coreTransform;
+          input = DirectorCore.MonsterSpawnDistance.Far;
+        }
+        DirectorPlacementRule placementRule = new DirectorPlacementRule()
+        {
+          spawnOnTarget = transform,
+          placementMode = DirectorPlacementRule.PlacementMode.NearestNode
+        };
+        DirectorCore.GetMonsterSpawnDistance(input, out placementRule.minDistance, out placementRule.maxDistance);
+        DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(spawnCard, placementRule, rng);
+        directorSpawnRequest.teamIndexOverride = new TeamIndex?(TeamIndex.Monster);
+        directorSpawnRequest.ignoreTeamMemberLimit = true;
+        CombatSquad combatSquad = null;
+        directorSpawnRequest.onSpawnedServer += (result =>
+        {
+          if (!(bool)combatSquad)
+            combatSquad = Instantiate(LegacyResourcesAPI.Load<GameObject>("Prefabs/NetworkedObjects/Encounters/ShadowCloneEncounter")).GetComponent<CombatSquad>();
+          combatSquad.AddMember(result.spawnedInstance.GetComponent<CharacterMaster>());
+        });
+        DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
+        if ((bool)combatSquad)
+          NetworkServer.Spawn(combatSquad.gameObject);
+        Destroy(spawnCard);
       }
       else
-      {
-        transform = srcCharacterMaster.GetBody().coreTransform;
-        input = DirectorCore.MonsterSpawnDistance.Far;
-      }
-      DirectorPlacementRule placementRule = new DirectorPlacementRule()
-      {
-        spawnOnTarget = transform,
-        placementMode = DirectorPlacementRule.PlacementMode.NearestNode
-      };
-      DirectorCore.GetMonsterSpawnDistance(input, out placementRule.minDistance, out placementRule.maxDistance);
-      DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(spawnCard, placementRule, rng);
-      directorSpawnRequest.teamIndexOverride = new TeamIndex?(TeamIndex.Monster);
-      directorSpawnRequest.ignoreTeamMemberLimit = true;
-      CombatSquad combatSquad = null;
-      directorSpawnRequest.onSpawnedServer += (result =>
-      {
-        if (!(bool)combatSquad)
-          combatSquad = Instantiate(LegacyResourcesAPI.Load<GameObject>("Prefabs/NetworkedObjects/Encounters/ShadowCloneEncounter")).GetComponent<CombatSquad>();
-        combatSquad.AddMember(result.spawnedInstance.GetComponent<CharacterMaster>());
-      });
-      DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
-      if ((bool)combatSquad)
-        NetworkServer.Spawn(combatSquad.gameObject);
-      Destroy(spawnCard);
+        orig(srcCharacterMaster, rng);
     }
     private void CharacterMasterOnBodyStart(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
     {
@@ -569,7 +573,12 @@ namespace UmbralMithrix
         // Make Mithrix an Umbra
         if (body.name == "BrotherBody(Clone)" || body.name == "BrotherHurtBody(Clone)" || body.name == "BrotherGlassBody(Clone)")
           self.inventory.GiveItemString(UmbralItem.name);
-        if (self.name == "BrotherHurtMaster(Clone)")
+        if (self.name == "BrotherHurtMaster(Clone)" && !ModConfig.doppelPhase4.Value)
+        {
+          body.AddBuff(RoR2Content.Buffs.Immune);
+          Task.Delay(3000).ContinueWith(o => { body.RemoveBuff(RoR2Content.Buffs.Immune); });
+        }
+        if (self.name == "BrotherHurtMaster(Clone)" && ModConfig.doppelPhase4.Value)
         {
           if (self.inventory.GetItemCount(RoR2Content.Items.ExtraLifeConsumed.itemIndex) == 0)
             body.AddBuff(RoR2Content.Buffs.Immune);
@@ -695,15 +704,6 @@ namespace UmbralMithrix
         AdjustPhase4Stats();
       orig(self);
     }
-    // Make Brother Haunt fire more projectiles after the fight
-    // private void FireRandomProjectiles(On.EntityStates.BrotherHaunt.FireRandomProjectiles.orig_OnEnter orig, EntityStates.BrotherHaunt.FireRandomProjectiles self)
-    // {
-    //   EntityStates.BrotherHaunt.FireRandomProjectiles.maximumCharges = 150;
-    //   EntityStates.BrotherHaunt.FireRandomProjectiles.chargeRechargeDuration = 0.08f;
-    //   EntityStates.BrotherHaunt.FireRandomProjectiles.chanceToFirePerSecond = 0.5f;
-    //   EntityStates.BrotherHaunt.FireRandomProjectiles.damageCoefficient = 15f;
-    //   orig(self);
-    // }
 
     private void ExitSkyLeapOnEnter(On.EntityStates.BrotherMonster.ExitSkyLeap.orig_OnEnter orig, ExitSkyLeap self)
     {
@@ -822,10 +822,7 @@ namespace UmbralMithrix
         projectilePrefab.transform.localScale = new Vector3(4f, 4f, 4f);
         projectilePrefab.GetComponent<ProjectileController>().ghostPrefab.transform.localScale = new Vector3(4f, 4f, 4f);
         hasfired = false;
-        int playerCount = PlayerCharacterMasterController.instances.Count;
-        if (playerCount > 3)
-          playerCount = 3;
-        for (int i = 0; i < playerCount; i++)
+        for (int i = 0; i < 2; i++)
         {
           DirectorPlacementRule placementRule = new DirectorPlacementRule();
           placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
@@ -835,7 +832,7 @@ namespace UmbralMithrix
           Xoroshiro128Plus rng = RoR2Application.rng;
           DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
           directorSpawnRequest.summonerBodyObject = self.gameObject;
-          directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 4));
+          directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 2));
           DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
         }
       }
@@ -961,7 +958,9 @@ namespace UmbralMithrix
 
     private void SpellChannelEnterStateOnEnter(On.EntityStates.BrotherMonster.SpellChannelEnterState.orig_OnEnter orig, SpellChannelEnterState self)
     {
-      if (shrineActivated)
+      if (shrineActivated && !ModConfig.doppelPhase4.Value)
+        SpellChannelEnterState.duration = 2.5f;
+      if (shrineActivated && ModConfig.doppelPhase4.Value)
       {
         if (Run.instance.loopClearCount == 0)
           SpellChannelEnterState.duration = 20;
@@ -973,7 +972,7 @@ namespace UmbralMithrix
 
     private void SpellChannelStateOnEnter(On.EntityStates.BrotherMonster.SpellChannelState.orig_OnEnter orig, SpellChannelState self)
     {
-      if (shrineActivated)
+      if (shrineActivated && ModConfig.doppelPhase4.Value)
       {
         int loopClearCount = 1;
         if (Run.instance.loopClearCount != 0)

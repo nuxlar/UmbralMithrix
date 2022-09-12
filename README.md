@@ -17,6 +17,14 @@ There's a mountain shrine near the escape ship to the right when you exit the tu
 
 ## Changelog
 
+**1.2.0**
+
+- Makes Phase 4 Vengeance event a config option
+- Replaced mountain shrine with obelisk next to where you spawn on the moon
+- Removed blink (messes with hammerslam)
+- Adds extra clone to HammerSlam
+- Adds Super Shards to Phase 2 Ult
+
 **1.1.3**
 
 - Fixes vanilla mithrix not working after hitting the shrine on a previous run (both regular and phase 4)

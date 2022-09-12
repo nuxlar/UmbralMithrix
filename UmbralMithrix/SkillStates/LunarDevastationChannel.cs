@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using EntityStates.BrotherHaunt;
 using EntityStates.BrotherMonster;
+using EntityStates.BrotherMonster.Weapon;
 using UmbralMithrix;
 using System.Collections.Generic;
 
@@ -16,6 +17,7 @@ public class LunarDevastationChannel : EntityStates.BaseState
   private int wavesFired;
   private int charges;
   private float chargeTimer;
+  private float elapsed;
   private GameObject channelEffectInstance;
 
   public override void OnEnter()
@@ -45,6 +47,7 @@ public class LunarDevastationChannel : EntityStates.BaseState
       ProjectileManager.instance.FireProjectile(golemProjectile, corePosition, Quaternion.LookRotation(forward), this.gameObject, (this.characterBody.damage * FistSlam.waveProjectileDamageCoefficient) / 4, 0f, Util.CheckRoll(this.characterBody.crit, this.characterBody.master), DamageColorIndex.Default, null, -1f);
       ProjectileManager.instance.FireProjectile(ExitSkyLeap.waveProjectilePrefab, footPosition, Util.QuaternionSafeLookRotation(forward), this.gameObject, this.characterBody.damage * ExitSkyLeap.waveProjectileDamageCoefficient, ExitSkyLeap.waveProjectileForce, Util.CheckRoll(this.characterBody.crit, this.characterBody.master));
     }
+
   }
 
   private void FireRandomFlameLine()
@@ -72,6 +75,7 @@ public class LunarDevastationChannel : EntityStates.BaseState
     base.FixedUpdate();
     if (!this.isAuthority)
       return;
+    elapsed += Time.deltaTime;
     if (Mathf.CeilToInt(this.fixedAge / this.maxDuration * (float)this.totalWaves) > this.wavesFired)
       this.FireWave();
     this.chargeTimer -= Time.fixedDeltaTime;
@@ -83,6 +87,16 @@ public class LunarDevastationChannel : EntityStates.BaseState
     if ((double)Random.value >= (double)0.5 || this.charges <= 0)
       return;
     this.FireRandomFlameLine();
+    if (elapsed >= 0.5f)
+    {
+      Ray aimRay = this.GetAimRay();
+      elapsed = elapsed % 0.5f;
+      for (int i = 0; i < 12; i++)
+      {
+        Util.PlaySound(EntityStates.BrotherMonster.Weapon.FireLunarShards.fireSound, this.gameObject);
+        ProjectileManager.instance.FireProjectile(FireLunarShards.projectilePrefab, aimRay.origin, Quaternion.LookRotation(aimRay.direction), this.gameObject, this.characterBody.damage * 0.1f / 12f, 0f, Util.CheckRoll(this.characterBody.crit, this.characterBody.master), DamageColorIndex.Default, null, -1f);
+      }
+    }
     if ((double)this.fixedAge <= (double)this.maxDuration)
       return;
     this.outer.SetNextState(new LunarDevastationExit());

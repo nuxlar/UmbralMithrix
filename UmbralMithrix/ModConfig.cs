@@ -7,6 +7,7 @@ namespace UmbralMithrix
 {
   internal class ModConfig
   {
+    public static ConfigEntry<bool> doppelPhase4;
     public static ConfigEntry<bool> debuffResistance;
 
     public static ConfigEntry<float> phase1BaseHPScaling;
@@ -81,6 +82,7 @@ namespace UmbralMithrix
 
     public static void InitConfig(ConfigFile config)
     {
+      doppelPhase4 = config.Bind("General", "Phase 4 Doppel Fight", true, "Toggle the vengeance event in phase 4");
       debuffResistance = config.Bind("General", "Freeze/Nullify Immune", false, "Toggle the debuff resistance for loop 1, will not turn off for loops 2 and up");
 
       phase1BaseHPScaling = config.Bind("Scaling First Loop", "P1 HP", 0f, "HP boost percentage for Phase 1 FIRST LOOP (5 stages)");
@@ -149,6 +151,7 @@ namespace UmbralMithrix
 
       // Risk Of Options Setup
       // General
+      ModSettingsManager.AddOption(new CheckBoxOption(doppelPhase4));
       ModSettingsManager.AddOption(new CheckBoxOption(debuffResistance));
       // Scaling
       ModSettingsManager.AddOption(new StepSliderOption(phase1BaseHPScaling, new StepSliderConfig() { min = 0, max = 1, increment = 0.025f }));
