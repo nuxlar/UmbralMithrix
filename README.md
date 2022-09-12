@@ -30,6 +30,7 @@ The mod is highly configurable. You can edit config values in-game and during ru
 - Adds SuperShardWeight to config (how many shards are in 1 super shard)
 - Adds Phase 2 Ult Super Shard Interval to config (how often it fires)
 - Reduces default Super Shard Weight from 12 -> 6 so they're not an insta kill
+- Added Github link to page
 
 **1.2.0**
 
