@@ -31,7 +31,7 @@ namespace UmbralMithrix
   public class UmbralMithrix : BaseUnityPlugin
   {
     bool hasfired;
-    int phaseCounter = 0;
+    public int phaseCounter = 0;
     float elapsed = 0;
     bool shrineActivated = false;
     bool doppelEventHasTriggered = false;
@@ -240,7 +240,7 @@ namespace UmbralMithrix
       SkillFamily Ult = SklLocate.special.skillFamily;
       SkillDef UltChange = Ult.variants[0].skillDef;
       UltChange.baseRechargeInterval = ModConfig.SpecialCD.Value;
-      UltChange.baseMaxStock = 5;
+      UltChange.activationState = new EntityStates.SerializableEntityStateType(typeof(EnterCrushingLeap));
     }
 
     private void AdjustPhase2Stats()
@@ -344,7 +344,9 @@ namespace UmbralMithrix
       ContentAddition.AddEntityState<LunarDevastationEnter>(out _);
       ContentAddition.AddEntityState<LunarDevastationChannel>(out _);
       ContentAddition.AddEntityState<LunarDevastationExit>(out _);
-
+      ContentAddition.AddEntityState<EnterCrushingLeap>(out _);
+      ContentAddition.AddEntityState<AimCrushingLeap>(out _);
+      ContentAddition.AddEntityState<ExitCrushingLeap>(out _);
       /** For Debugging
       SurvivorDef mitchell = ScriptableObject.CreateInstance<SurvivorDef>();
       mitchell.bodyPrefab = MithrixHurt;
