@@ -23,6 +23,11 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ## Changelog
 
+**1.2.2**
+
+- Replaces Skyleap with CrushingLeap
+- Adds config for CrushingLeap aim duration (configurable mid fight)
+
 **1.2.1**
 
 - Changes README

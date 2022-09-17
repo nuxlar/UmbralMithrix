@@ -58,6 +58,7 @@ namespace UmbralMithrix
     public static ConfigEntry<float> SpecialCD;
 
     public static ConfigEntry<int> SuperShardWeight;
+    public static ConfigEntry<float> CrushingLeap;
     public static ConfigEntry<float> P2SuperShardInterval;
     public static ConfigEntry<int> P2UltCount;
     public static ConfigEntry<int> P2UltOrbCount;
@@ -135,6 +136,7 @@ namespace UmbralMithrix
       SpecialCD = config.Bind("Skills", "Special Cooldown", 30f, "Cooldown for Mithrix's Jump Attack. Vanilla: 30");
 
       SuperShardWeight = config.Bind("New Skills", "Super Shards", 6, "How many shards are in 1 super shard. Vanilla: N/A");
+      CrushingLeap = config.Bind("New Skills", "Crushing Leap", 2.5f, "How long Mithrix stays in the air during the crushing leap. Vanilla: N/A");
       P2UltCount = config.Bind("New Skills", "P2 Ult Bursts", 5, "Total times the shrapnel waves fire in phase 2 ultimate. Vanilla: N/A");
       P2UltOrbCount = config.Bind("New Skills", "P2 Ult Waves", 12, "Total shrapnel waves and golem projectiles fired in a circle in phase 2 ultimate. Vanilla: N/A");
       P2UltDuration = config.Bind("New Skills", "P2 Ult Duration", 8f, "How long phase 2 ultimate lasts. Vanilla: N/A");
@@ -204,13 +206,13 @@ namespace UmbralMithrix
       ModSettingsManager.AddOption(new StepSliderOption(SpecialCD, new StepSliderConfig() { min = 10, max = 50, increment = 1f }));
       // New Skills
       ModSettingsManager.AddOption(new IntSliderOption(SuperShardWeight, new IntSliderConfig() { min = 3, max = 12 }));
+      ModSettingsManager.AddOption(new StepSliderOption(CrushingLeap, new StepSliderConfig() { min = 0.1f, max = 6, increment = 0.1f }));
       ModSettingsManager.AddOption(new StepSliderOption(P2SuperShardInterval, new StepSliderConfig() { min = 0.1f, max = 2, increment = 0.1f }));
       ModSettingsManager.AddOption(new IntSliderOption(P2UltCount, new IntSliderConfig() { min = 2, max = 8 }));
       ModSettingsManager.AddOption(new StepSliderOption(P2UltDuration, new StepSliderConfig() { min = 4, max = 12, increment = 0.5f }));
       ModSettingsManager.AddOption(new IntSliderOption(P2UltOrbCount, new IntSliderConfig() { min = 0, max = 12 }));
       ModSettingsManager.AddOption(new IntSliderOption(SuperShardCount, new IntSliderConfig() { min = 1, max = 12 }));
       ModSettingsManager.AddOption(new StepSliderOption(SuperShardCD, new StepSliderConfig() { min = 1, max = 5, increment = 0.25f }));
-
       // Skill Mods
       ModSettingsManager.AddOption(new IntSliderOption(LunarShardAdd, new IntSliderConfig() { min = 1, max = 5 }));
       ModSettingsManager.AddOption(new IntSliderOption(UltimateWaves, new IntSliderConfig() { min = 4, max = 18 }));

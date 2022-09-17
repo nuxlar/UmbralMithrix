@@ -9,7 +9,7 @@ namespace UmbralMithrix
   public class AimCrushingLeap : BaseSkillState
   {
     public static GameObject areaIndicatorPrefab = ArrowRain.areaIndicatorPrefab;
-    public float maxDuration = 2f;
+    public float maxDuration = ModConfig.CrushingLeap.Value;
     private CharacterModel characterModel;
     private HurtBoxGroup hurtboxGroup;
     private GameObject areaIndicatorInstance;
