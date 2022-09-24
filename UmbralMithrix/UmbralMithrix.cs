@@ -17,7 +17,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.2.2")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.2.3")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -313,8 +313,17 @@ namespace UmbralMithrix
       else
         hpMultiplier = (ModConfig.phase4LoopHPScaling.Value * Run.instance.loopClearCount) + (ModConfig.phase4PlayerHPScaling.Value * playerCount);
       CharacterBody MithrixHurtBody = MithrixHurt.GetComponent<CharacterBody>();
-      MithrixHurtBody.baseMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 10 : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 3;
-      MithrixHurtBody.levelMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 10 : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 3;
+
+      if (ModConfig.doppelPhase4.Value)
+      {
+        MithrixHurtBody.baseMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 10 : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 3;
+        MithrixHurtBody.levelMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 10 : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 3;
+      }
+      else
+      {
+        MithrixHurtBody.baseMaxHealth = ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier);
+        MithrixHurtBody.levelMaxHealth = ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier);
+      }
 
       MithrixHurtBody.baseArmor = ModConfig.basearmor.Value;
       SkillLocator skillLocator = MithrixHurt.GetComponent<SkillLocator>();
@@ -753,7 +762,7 @@ namespace UmbralMithrix
             Xoroshiro128Plus rng = RoR2Application.rng;
             DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
             directorSpawnRequest.summonerBodyObject = self.gameObject;
-            directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, ExitSkyLeap.cloneDuration));
+            directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, ExitSkyLeap.cloneDuration / 2));
             DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
           }
         }
@@ -802,7 +811,7 @@ namespace UmbralMithrix
               DirectorPlacementRule placementRule = new DirectorPlacementRule();
               placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
               placementRule.minDistance = 3f;
-              placementRule.maxDistance = 20f;
+              placementRule.maxDistance = 50f;
               placementRule.spawnOnTarget = self.gameObject.transform;
               Xoroshiro128Plus rng = RoR2Application.rng;
               DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
@@ -824,18 +833,34 @@ namespace UmbralMithrix
         projectilePrefab.transform.localScale = new Vector3(4f, 4f, 4f);
         projectilePrefab.GetComponent<ProjectileController>().ghostPrefab.transform.localScale = new Vector3(4f, 4f, 4f);
         hasfired = false;
-        for (int i = 0; i < 2; i++)
+        if (phaseCounter == 2)
         {
           DirectorPlacementRule placementRule = new DirectorPlacementRule();
           placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
           placementRule.minDistance = 3f;
-          placementRule.maxDistance = 20f;
+          placementRule.maxDistance = 50f;
           placementRule.spawnOnTarget = self.gameObject.transform;
           Xoroshiro128Plus rng = RoR2Application.rng;
           DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
           directorSpawnRequest.summonerBodyObject = self.gameObject;
-          directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 2));
+          directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 4));
           DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
+        }
+        else
+        {
+          for (int i = 0; i < 2; i++)
+          {
+            DirectorPlacementRule placementRule = new DirectorPlacementRule();
+            placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
+            placementRule.minDistance = 3f;
+            placementRule.maxDistance = 50f;
+            placementRule.spawnOnTarget = self.gameObject.transform;
+            Xoroshiro128Plus rng = RoR2Application.rng;
+            DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
+            directorSpawnRequest.summonerBodyObject = self.gameObject;
+            directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 4));
+            DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
+          }
         }
       }
       orig(self);

@@ -23,6 +23,15 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ## Changelog
 
+**1.2.3**
+
+- Fixed "Vanilla" phase 4 having an HP boost
+- Doubles config value for phase 4 super shard CD (change to 4 if you're updating)
+- Extends clone spawn distance so they can spawn at the edges of the arena
+- Extends HammerSlam clone duration to match sprint bash (4s)
+- Halves Phase 3 HammerSlam clones to 1
+- Halves Phase 2 CrushingLeap clones' duration
+
 **1.2.2**
 
 - Replaces Skyleap with CrushingLeap

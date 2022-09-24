@@ -142,7 +142,7 @@ namespace UmbralMithrix
       P2UltDuration = config.Bind("New Skills", "P2 Ult Duration", 8f, "How long phase 2 ultimate lasts. Vanilla: N/A");
       P2SuperShardInterval = config.Bind("New Skills", "P2 Ult Super Shards", 0.6f, "Interval at which super shards are fired in P2 Ult in seconds. Vanilla: N/A");
       SuperShardCount = config.Bind("New Skills", "Super Shard Stocks", 3, "How many super shards Mithrix can fire before CD. Vanilla: N/A");
-      SuperShardCD = config.Bind("New Skills", "Super Shard CD", 2f, "How long it takes for Mithrix to fire super shards again. Vanilla: N/A");
+      SuperShardCD = config.Bind("New Skills", "Super Shard CD", 4f, "How long it takes for Mithrix to fire super shards again. Vanilla: N/A");
 
       LunarShardAdd = config.Bind("Skill Mods", "Shard Add Count", 2, "Bonus shards added to each shot of lunar shards. Vanilla: N/A");
       UltimateWaves = config.Bind("Skill Mods", "P3 Ult Lines", 5, "Total lines in ultimate per burst. Vanilla: 4");
