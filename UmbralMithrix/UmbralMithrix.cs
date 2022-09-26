@@ -17,7 +17,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.2.3")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.3.0")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -72,6 +72,7 @@ namespace UmbralMithrix
       On.RoR2.CharacterBody.AddTimedBuff_BuffDef_float += AddTimedBuff_BuffDef_float;
       On.EntityStates.BrotherMonster.SprintBash.OnEnter += SprintBashOnEnter;
       On.EntityStates.BrotherMonster.WeaponSlam.OnEnter += WeaponSlamOnEnter;
+      On.EntityStates.BrotherMonster.WeaponSlam.FixedUpdate += WeaponSlamFixedUpdate;
       On.EntityStates.BrotherMonster.WeaponSlam.OnEnter += CleanupPillar;
       On.EntityStates.BrotherMonster.Weapon.FireLunarShards.OnEnter += FireLunarShardsOnEnter;
       On.EntityStates.BrotherMonster.FistSlam.OnEnter += FistSlamOnEnter;
@@ -450,7 +451,7 @@ namespace UmbralMithrix
     private void OnInventoryChanged(On.RoR2.CharacterBody.orig_OnInventoryChanged orig, CharacterBody self)
     {
       orig(self);
-      if (NetworkServer.active && self.inventory && shrineActivated && phaseCounter == 3 && ModConfig.doppelPhase4.Value && (self.inventory.GetItemCount(UmbralItem) > 0 || self.inventory.GetItemCount(RoR2Content.Items.InvadingDoppelganger) > 0))
+      if (NetworkServer.active && self.inventory && shrineActivated && phaseCounter == 3 && (self.inventory.GetItemCount(UmbralItem) > 0 || self.inventory.GetItemCount(RoR2Content.Items.InvadingDoppelganger) > 0))
       {
         // Remove Blacklisted Items
         foreach (ItemIndex item in doppelBlacklist)
@@ -581,6 +582,8 @@ namespace UmbralMithrix
       orig(self, body);
       if (shrineActivated)
       {
+        if ((phaseCounter == 1 || phaseCounter == 2) && (body.name == "LunarGolemBody(Clone)" || body.name == "LunarExploderBody(Clone)" || body.name == "LunarWispBody(Clone)"))
+          body.healthComponent.Suicide();
         // Make Mithrix an Umbra
         if (body.name == "BrotherBody(Clone)" || body.name == "BrotherHurtBody(Clone)" || body.name == "BrotherGlassBody(Clone)")
           self.inventory.GiveItemString(UmbralItem.name);
@@ -691,12 +694,22 @@ namespace UmbralMithrix
 
     private void Phase2OnEnter(On.EntityStates.Missions.BrotherEncounter.Phase2.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.Phase2 self)
     {
-      if (shrineActivated)
+      // Phase 2 Skip
+      if (shrineActivated && ModConfig.phase2Skip.Value)
+      {
+        orig(self);
+        self.PreEncounterBegin();
+        self.outer.SetNextState((EntityStates.EntityState)new EntityStates.Missions.BrotherEncounter.Phase3());
+      }
+      // Regular Umbral Phase 2
+      else if (shrineActivated)
       {
         self.KillAllMonsters();
         AdjustPhase2Stats();
+        orig(self);
       }
-      orig(self);
+      else
+        orig(self);
     }
 
     private void Phase3OnEnter(On.EntityStates.Missions.BrotherEncounter.Phase3.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.Phase3 self)
@@ -830,23 +843,18 @@ namespace UmbralMithrix
       if (shrineActivated)
       {
         GameObject projectilePrefab = WeaponSlam.pillarProjectilePrefab;
-        projectilePrefab.transform.localScale = new Vector3(4f, 4f, 4f);
-        projectilePrefab.GetComponent<ProjectileController>().ghostPrefab.transform.localScale = new Vector3(4f, 4f, 4f);
-        hasfired = false;
         if (phaseCounter == 2)
         {
-          DirectorPlacementRule placementRule = new DirectorPlacementRule();
-          placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
-          placementRule.minDistance = 3f;
-          placementRule.maxDistance = 50f;
-          placementRule.spawnOnTarget = self.gameObject.transform;
-          Xoroshiro128Plus rng = RoR2Application.rng;
-          DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
-          directorSpawnRequest.summonerBodyObject = self.gameObject;
-          directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 4));
-          DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
+          projectilePrefab.transform.localScale = new Vector3(2f, 2f, 2f);
+          projectilePrefab.GetComponent<ProjectileController>().ghostPrefab.transform.localScale = new Vector3(2f, 2f, 2f);
         }
         else
+        {
+          projectilePrefab.transform.localScale = new Vector3(4f, 4f, 4f);
+          projectilePrefab.GetComponent<ProjectileController>().ghostPrefab.transform.localScale = new Vector3(4f, 4f, 4f);
+        }
+        hasfired = false;
+        if (phaseCounter != 2)
         {
           for (int i = 0; i < 2; i++)
           {
@@ -864,6 +872,20 @@ namespace UmbralMithrix
         }
       }
       orig(self);
+    }
+
+    private void WeaponSlamFixedUpdate(On.EntityStates.BrotherMonster.WeaponSlam.orig_FixedUpdate orig, EntityStates.BrotherMonster.WeaponSlam self)
+    {
+      if (phaseCounter == 1)
+      {
+        if (PhaseCounter.instance)
+          PhaseCounter.instance.phase = 3;
+        orig(self);
+        if (PhaseCounter.instance)
+          PhaseCounter.instance.phase = 2;
+      }
+      else
+        orig(self);
     }
 
     private void FireLunarShardsOnEnter(On.EntityStates.BrotherMonster.Weapon.FireLunarShards.orig_OnEnter orig, FireLunarShards self)

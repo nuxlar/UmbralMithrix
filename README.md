@@ -5,9 +5,9 @@ Accursed Mithrix **reworked** variant with clones and new Phase 4 (For more info
 Phase info:
 
 - Phase 1 Bash and Slam spawn a deteriorating glass clone with full damage and a trick up their sleeve (2 for slam).
-- Phase 2 2 glass clones split off from the shadow after skyleap.
+- Phase 2 The shadows hammer is imbued with power. 2 glass clones split off from the shadow after skyleap (skippable).
 - Phase 3 The shadow splits into 2 (50% HP Each for 1-2 players).
-- Phase 4 The shadow becomes invulnerable and summons shadows of his enemies, survive until the shadow's shield falls, it'll slowly start stealing items destroy him quickly.
+- Phase 4 The shadow becomes invulnerable and summons shadows of his enemies, survive until the shadow's shield falls, it'll slowly start stealing items destroy him quickly (toggleable).
 
 ## How to Activate
 
@@ -22,6 +22,15 @@ The mod is highly configurable. You can edit config values in-game and during ru
 ![mod options](https://i.ibb.co/q9fC9jj/Screenshot-2022-09-12-165657.png)
 
 ## Changelog
+
+**1.3.0**
+ 
+- Fixes Blacklist not being applied for "Vanilla" Phase 4
+- Adds large Flame Pillar and HammerSlam shockwave to Phase 2
+- Halves the Flame Pillar size for Phase 3 
+- Removes Phase 3 HammerSlam clones
+- Adds config to skip Phase 2 for a more casual fight
+- Removes Lunar Chimera from Phases 2 and 3 (in a hacky way)
 
 **1.2.3**
 
