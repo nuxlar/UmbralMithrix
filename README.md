@@ -2,6 +2,8 @@
 
 Accursed Mithrix **reworked** variant with clones and new Phase 4 (For more info on the base mod https://thunderstore.io/package/Nuxlar/MithrixTheAccursed/).
 
+Blacklisted Items (from mithy and doppels): Tesla, Nkuhanas, Empathy, Drone Parts, Razorwire
+
 Phase info:
 
 - Phase 1 Bash and Slam spawn a deteriorating glass clone with full damage and a trick up their sleeve (2 for slam).
@@ -22,6 +24,20 @@ The mod is highly configurable. You can edit config values in-game and during ru
 ![mod options](https://i.ibb.co/q9fC9jj/Screenshot-2022-09-12-165657.png)
 
 ## Changelog
+
+**1.4.0**
+
+- DELETE YOUR UMBRALMITHRIX CONFIG IF UPDATING
+- Adds config to toggle umbra effect
+- Changes some config values (removes some, edits others)
+  - reduces CrushingLeap by 1s
+  - increased pizza waves by 1
+  - reduces pizza duration to 6 secs
+- Reduces Doppel Phase 4 Mithrix HP (No Loop 0, Loop 5x)
+- "Reworks" Phase 2
+  - Full Pizza (x2 the config)
+  - Removed "new" pizza (shockwave)
+
 
 **1.3.0**
  

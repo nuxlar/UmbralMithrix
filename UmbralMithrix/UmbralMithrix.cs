@@ -17,7 +17,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.3.0")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.4.0")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -67,7 +67,6 @@ namespace UmbralMithrix
       On.EntityStates.Missions.BrotherEncounter.Phase2.OnEnter += Phase2OnEnter;
       On.EntityStates.Missions.BrotherEncounter.Phase3.OnEnter += Phase3OnEnter;
       On.EntityStates.Missions.BrotherEncounter.Phase4.OnEnter += Phase4OnEnter;
-      On.EntityStates.BrotherMonster.ExitSkyLeap.OnEnter += ExitSkyLeapOnEnter;
       On.EntityStates.FrozenState.OnEnter += FrozenStateOnEnter;
       On.RoR2.CharacterBody.AddTimedBuff_BuffDef_float += AddTimedBuff_BuffDef_float;
       On.EntityStates.BrotherMonster.SprintBash.OnEnter += SprintBashOnEnter;
@@ -129,7 +128,7 @@ namespace UmbralMithrix
       HoldSkyLeap.duration = 3;
       ExitSkyLeap.waveProjectileCount = 12;
       ExitSkyLeap.recastChance = 0;
-      UltChannelState.waveProjectileCount = 8;
+      UltChannelState.waveProjectileCount = 6;
       UltChannelState.maxDuration = 8;
       UltChannelState.totalWaves = 4;
     }
@@ -214,7 +213,7 @@ namespace UmbralMithrix
       HoldSkyLeap.duration = ModConfig.JumpPause.Value;
       ExitSkyLeap.waveProjectileCount = ModConfig.JumpWaveCount.Value;
       ExitSkyLeap.recastChance = ModConfig.JumpRecast.Value;
-      UltChannelState.waveProjectileCount = ModConfig.UltimateWaves.Value;
+      UltChannelState.waveProjectileCount = (int)(ModConfig.UltimateWaves.Value * 2);
       UltChannelState.maxDuration = ModConfig.UltimateDuration.Value;
       UltChannelState.totalWaves = ModConfig.UltimateCount.Value;
     }
@@ -302,6 +301,8 @@ namespace UmbralMithrix
       MithrixDirection.turnSpeed = ModConfig.turningspeed.Value + (ModConfig.turningspeed.Value * mobilityMultiplier);
 
       WeaponSlam.duration = (3.5f / ModConfig.baseattackspeed.Value);
+      UltChannelState.waveProjectileCount = ModConfig.UltimateWaves.Value;
+      UltChannelState.maxDuration = ModConfig.UltimateDuration.Value;
     }
 
     private void AdjustPhase4Stats()
@@ -317,8 +318,8 @@ namespace UmbralMithrix
 
       if (ModConfig.doppelPhase4.Value)
       {
-        MithrixHurtBody.baseMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 10 : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 3;
-        MithrixHurtBody.levelMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 10 : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 3;
+        MithrixHurtBody.baseMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) * 5 : ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier);
+        MithrixHurtBody.levelMaxHealth = Run.instance.loopClearCount > 1 ? (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) * 5 : ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier);
       }
       else
       {
@@ -327,8 +328,8 @@ namespace UmbralMithrix
       }
 
       MithrixHurtBody.baseArmor = ModConfig.basearmor.Value;
-      SkillLocator skillLocator = MithrixHurt.GetComponent<SkillLocator>();
-      SkillFamily fireLunarShardsHurt = skillLocator.primary.skillFamily;
+      SkillLocator skillLocatorM = MithrixHurt.GetComponent<SkillLocator>();
+      SkillFamily fireLunarShardsHurt = skillLocatorM.primary.skillFamily;
       SkillDef fireLunarShardsHurtSkillDef = fireLunarShardsHurt.variants[0].skillDef;
       fireLunarShardsHurtSkillDef.baseRechargeInterval = ModConfig.SuperShardCD.Value;
       fireLunarShardsHurtSkillDef.baseMaxStock = ModConfig.SuperShardCount.Value;
@@ -351,9 +352,6 @@ namespace UmbralMithrix
     private void AddContent()
     {
       // Add our new EntityStates to the game
-      ContentAddition.AddEntityState<LunarDevastationEnter>(out _);
-      ContentAddition.AddEntityState<LunarDevastationChannel>(out _);
-      ContentAddition.AddEntityState<LunarDevastationExit>(out _);
       ContentAddition.AddEntityState<EnterCrushingLeap>(out _);
       ContentAddition.AddEntityState<AimCrushingLeap>(out _);
       ContentAddition.AddEntityState<ExitCrushingLeap>(out _);
@@ -585,7 +583,7 @@ namespace UmbralMithrix
         if ((phaseCounter == 1 || phaseCounter == 2) && (body.name == "LunarGolemBody(Clone)" || body.name == "LunarExploderBody(Clone)" || body.name == "LunarWispBody(Clone)"))
           body.healthComponent.Suicide();
         // Make Mithrix an Umbra
-        if (body.name == "BrotherBody(Clone)" || body.name == "BrotherHurtBody(Clone)" || body.name == "BrotherGlassBody(Clone)")
+        if (ModConfig.umbraToggle.Value && (body.name == "BrotherBody(Clone)" || body.name == "BrotherHurtBody(Clone)" || body.name == "BrotherGlassBody(Clone)"))
           self.inventory.GiveItemString(UmbralItem.name);
         if (self.name == "BrotherHurtMaster(Clone)" && !ModConfig.doppelPhase4.Value)
         {
@@ -727,75 +725,6 @@ namespace UmbralMithrix
       if (shrineActivated)
         AdjustPhase4Stats();
       orig(self);
-    }
-
-    private void ExitSkyLeapOnEnter(On.EntityStates.BrotherMonster.ExitSkyLeap.orig_OnEnter orig, ExitSkyLeap self)
-    {
-      if (shrineActivated)
-      {
-        // EntityStates BaseState OnEnter
-        if (!(bool)self.characterBody)
-          return;
-        self.attackSpeedStat = self.characterBody.attackSpeed;
-        self.damageStat = self.characterBody.damage;
-        self.critStat = self.characterBody.crit;
-        self.moveSpeedStat = self.characterBody.moveSpeed;
-        // EntityStates BaseState OnEnter
-        self.duration = ExitSkyLeap.baseDuration / self.attackSpeedStat;
-        int num = (int)Util.PlaySound(ExitSkyLeap.soundString, self.gameObject);
-        self.PlayAnimation("Body", nameof(ExitSkyLeap), "SkyLeap.playbackRate", self.duration);
-        self.PlayAnimation("FullBody Override", "BufferEmpty");
-        self.characterBody.AddTimedBuff(RoR2Content.Buffs.ArmorBoost, ExitSkyLeap.baseDuration);
-        AimAnimator aimAnimator = self.GetAimAnimator();
-        if ((bool)aimAnimator)
-          aimAnimator.enabled = true;
-        if (self.isAuthority)
-        {
-          self.FireRingAuthority();
-          // custom Ring Authority
-          float num1 = 360f / ExitSkyLeap.waveProjectileCount;
-          Vector3 point = Vector3.ProjectOnPlane(self.inputBank.aimDirection, Vector3.up);
-          Vector3 point2 = Vector3.ProjectOnPlane(self.inputBank.aimDirection, Vector3.forward);
-          Vector3 corePosition = self.characterBody.corePosition;
-          for (int index = 0; index < ExitSkyLeap.waveProjectileCount; ++index)
-          {
-            Vector3 forward3 = Quaternion.AngleAxis(num1 * index, Vector3.up) * point;
-            ProjectileManager.instance.FireProjectile(FistSlam.waveProjectilePrefab, corePosition, Util.QuaternionSafeLookRotation(forward3), self.gameObject, self.characterBody.damage * FistSlam.waveProjectileDamageCoefficient, FistSlam.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master));
-          }
-        }
-        if (phaseCounter == 1)
-        {
-          for (int index = 0; index < 2; ++index)
-          {
-            DirectorPlacementRule placementRule = new DirectorPlacementRule();
-            placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
-            placementRule.minDistance = 3f;
-            placementRule.maxDistance = 20f;
-            placementRule.spawnOnTarget = self.gameObject.transform;
-            Xoroshiro128Plus rng = RoR2Application.rng;
-            DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
-            directorSpawnRequest.summonerBodyObject = self.gameObject;
-            directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, ExitSkyLeap.cloneDuration / 2));
-            DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
-          }
-        }
-        if (!(bool)PhaseCounter.instance)
-          return;
-        if ((double)UnityEngine.Random.value < ExitSkyLeap.recastChance)
-          self.recast = true;
-        if (PhaseCounter.instance.phase == 1)
-          return;
-        GenericSkill genericSkill = (bool)self.skillLocator ? self.skillLocator.special : null;
-        if (!(bool)genericSkill)
-          return;
-        if (PhaseCounter.instance.phase == 2)
-          UltChannelState.replacementSkillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(LunarDevastationEnter));
-        else
-          UltChannelState.replacementSkillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(UltEnterState));
-        genericSkill.SetSkillOverride(self.outer, UltChannelState.replacementSkillDef, GenericSkill.SkillOverridePriority.Contextual);
-      }
-      else
-        orig(self);
     }
 
     // Adds more projectiles to SprintBash in a cone shape

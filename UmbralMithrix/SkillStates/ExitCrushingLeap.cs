@@ -56,10 +56,7 @@ namespace UmbralMithrix
       GenericSkill genericSkill = (bool)this.skillLocator ? this.skillLocator.special : null;
       if (!(bool)genericSkill)
         return;
-      if (PhaseCounter.instance.phase == 2)
-        UltChannelState.replacementSkillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(LunarDevastationEnter));
-      else
-        UltChannelState.replacementSkillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(UltEnterState));
+      UltChannelState.replacementSkillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(UltEnterState));
       genericSkill.SetSkillOverride(this.outer, UltChannelState.replacementSkillDef, GenericSkill.SkillOverridePriority.Contextual);
     }
 
