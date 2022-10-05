@@ -10,6 +10,8 @@ namespace UmbralMithrix
     public static ConfigEntry<bool> doppelPhase4;
     public static ConfigEntry<bool> umbraToggle;
     public static ConfigEntry<bool> phase2Skip;
+    public static ConfigEntry<bool> phase2Ult;
+    public static ConfigEntry<bool> phase2Clones;
     public static ConfigEntry<bool> debuffResistance;
 
     public static ConfigEntry<float> phase1BaseHPScaling;
@@ -63,6 +65,10 @@ namespace UmbralMithrix
     public static ConfigEntry<float> CrushingLeap;
     public static ConfigEntry<int> SuperShardCount;
     public static ConfigEntry<float> SuperShardCD;
+    public static ConfigEntry<float> P2SuperShardInterval;
+    public static ConfigEntry<int> P2UltCount;
+    public static ConfigEntry<int> P2UltOrbCount;
+    public static ConfigEntry<float> P2UltDuration;
 
     public static ConfigEntry<int> SlamOrbProjectileCount;
     public static ConfigEntry<int> SlamProjectileCount;
@@ -85,8 +91,10 @@ namespace UmbralMithrix
     {
       doppelPhase4 = config.Bind("General", "Phase 4 Doppel Fight", true, "Toggle the vengeance event in phase 4");
       umbraToggle = config.Bind("General", "Toggle Umbra Effect", true, "Toggle if Mithrix is an Umbra (Visual)");
-      phase2Skip = config.Bind("General", "Phase 2 Skip", false, "Skip Phase 2 for a more casual fight");
+      phase2Ult = config.Bind("General", "Phase 2 Ult", false, "Toggle between pizza (off) and Lunar Devastation (shockwaves) (on)");
+      phase2Skip = config.Bind("General", "Phase 2 Skip", false, "Skip The Reworked Phase 2 for a more casual fight");
       debuffResistance = config.Bind("General", "Freeze/Nullify Immune", false, "Toggle the debuff resistance for loop 1, will not turn off for loops 2 and up");
+      phase2Clones = config.Bind("General", "Phase 2 Clones", false, "Toggle the Phase 2 Clones after Crushing Leap");
 
       phase1BaseHPScaling = config.Bind("Scaling First Loop", "P1 HP", 0f, "HP boost percentage for Phase 1 FIRST LOOP (5 stages)");
       phase2BaseHPScaling = config.Bind("Scaling First Loop", "P2 HP", 0f, "HP boost percentage for Phase 2 FIRST LOOP");
@@ -139,6 +147,10 @@ namespace UmbralMithrix
       CrushingLeap = config.Bind("New Skills", "Crushing Leap", 1.5f, "How long Mithrix stays in the air during the crushing leap. Vanilla: N/A");
       SuperShardCount = config.Bind("New Skills", "Super Shard Stocks", 3, "How many super shards Mithrix can fire before CD. Vanilla: N/A");
       SuperShardCD = config.Bind("New Skills", "Super Shard CD", 4f, "How long it takes for Mithrix to fire super shards again. Vanilla: N/A");
+      P2UltCount = config.Bind("New Skills", "P2 Ult Bursts", 5, "Total times the shrapnel waves fire in phase 2 ultimate. Vanilla: N/A");
+      P2UltOrbCount = config.Bind("New Skills", "P2 Ult Waves", 12, "Total shrapnel waves and golem projectiles fired in a circle in phase 2 ultimate. Vanilla: N/A");
+      P2UltDuration = config.Bind("New Skills", "P2 Ult Duration", 8f, "How long phase 2 ultimate lasts. Vanilla: N/A");
+      P2SuperShardInterval = config.Bind("New Skills", "P2 Ult Super Shards", 0.6f, "Interval at which super shards are fired in P2 Ult in seconds. Vanilla: N/A");
 
       LunarShardAdd = config.Bind("Skill Mods", "Shard Add Count", 2, "Bonus shards added to each shot of lunar shards. Vanilla: N/A");
       UltimateWaves = config.Bind("Skill Mods", "P3 Ult Lines", 6, "Total lines in ultimate per burst. Vanilla: 4");
@@ -155,7 +167,9 @@ namespace UmbralMithrix
       // General
       ModSettingsManager.AddOption(new CheckBoxOption(doppelPhase4));
       ModSettingsManager.AddOption(new CheckBoxOption(umbraToggle));
+      ModSettingsManager.AddOption(new CheckBoxOption(phase2Ult));
       ModSettingsManager.AddOption(new CheckBoxOption(phase2Skip));
+      ModSettingsManager.AddOption(new CheckBoxOption(phase2Clones));
       ModSettingsManager.AddOption(new CheckBoxOption(debuffResistance));
       // Scaling
       ModSettingsManager.AddOption(new StepSliderOption(phase1BaseHPScaling, new StepSliderConfig() { min = 0, max = 1, increment = 0.025f }));
@@ -207,6 +221,10 @@ namespace UmbralMithrix
       ModSettingsManager.AddOption(new StepSliderOption(CrushingLeap, new StepSliderConfig() { min = 0.1f, max = 6, increment = 0.1f }));
       ModSettingsManager.AddOption(new IntSliderOption(SuperShardCount, new IntSliderConfig() { min = 1, max = 12 }));
       ModSettingsManager.AddOption(new StepSliderOption(SuperShardCD, new StepSliderConfig() { min = 1, max = 5, increment = 0.25f }));
+      ModSettingsManager.AddOption(new StepSliderOption(P2SuperShardInterval, new StepSliderConfig() { min = 0.1f, max = 2, increment = 0.1f }));
+      ModSettingsManager.AddOption(new IntSliderOption(P2UltCount, new IntSliderConfig() { min = 2, max = 8 }));
+      ModSettingsManager.AddOption(new StepSliderOption(P2UltDuration, new StepSliderConfig() { min = 4, max = 12, increment = 0.5f }));
+      ModSettingsManager.AddOption(new IntSliderOption(P2UltOrbCount, new IntSliderConfig() { min = 0, max = 12 }));
       // Skill Mods
       ModSettingsManager.AddOption(new IntSliderOption(LunarShardAdd, new IntSliderConfig() { min = 1, max = 5 }));
       ModSettingsManager.AddOption(new IntSliderOption(UltimateWaves, new IntSliderConfig() { min = 4, max = 18 }));

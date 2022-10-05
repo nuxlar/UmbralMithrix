@@ -6,9 +6,9 @@ Blacklisted Items (from mithy and doppels): Tesla, Nkuhanas, Empathy, Drone Part
 
 Phase info:
 
-- Phase 1 Bash and Slam spawn a deteriorating glass clone with full damage and a trick up their sleeve (2 for slam).
-- Phase 2 The shadows hammer is imbued with power. 2 glass clones split off from the shadow after skyleap (skippable).
-- Phase 3 The shadow splits into 2 (50% HP Each for 1-2 players).
+- Phase 1 Mithrix now jumps on you for a Crushing Leap, get in the air. Bash and Slam spawn a deteriorating glass clone with full damage and a trick up their sleeve (2 for slam).
+- Phase 2 (skippable) The shadows hammer is imbued with power and uses a devastating flame line attack. 2 glass clones split off from the shadow after Crushing Leap (Off by default).
+- Phase 3 The shadow splits into 2 (50% HP Each for 1-2 players) halving the firepower of its abilities.
 - Phase 4 The shadow becomes invulnerable and summons shadows of his enemies, survive until the shadow's shield falls, it'll slowly start stealing items destroy him quickly (toggleable).
 
 ## How to Activate
@@ -24,6 +24,11 @@ The mod is highly configurable. You can edit config values in-game and during ru
 ![mod options](https://i.ibb.co/q9fC9jj/Screenshot-2022-09-12-165657.png)
 
 ## Changelog
+
+**1.4.1**
+
+- Adds config for phase 2 clones after crushing leap (for extra insanity)
+- Adds config for phase 2 Lunar Devastation (didn't think ppl liked this attack)
 
 **1.4.0**
 

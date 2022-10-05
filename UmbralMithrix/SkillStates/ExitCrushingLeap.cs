@@ -37,7 +37,7 @@ namespace UmbralMithrix
         return;
       if (PhaseCounter.instance.phase == 1)
         return;
-      if (PhaseCounter.instance.phase == 2)
+      if (PhaseCounter.instance.phase == 2 && ModConfig.phase2Clones.Value)
       {
         for (int index = 0; index < 2; ++index)
         {
@@ -56,7 +56,10 @@ namespace UmbralMithrix
       GenericSkill genericSkill = (bool)this.skillLocator ? this.skillLocator.special : null;
       if (!(bool)genericSkill)
         return;
-      UltChannelState.replacementSkillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(UltEnterState));
+      if (PhaseCounter.instance.phase == 2 && ModConfig.phase2Ult.Value)
+        UltChannelState.replacementSkillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(LunarDevastationEnter));
+      else
+        UltChannelState.replacementSkillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(UltEnterState));
       genericSkill.SetSkillOverride(this.outer, UltChannelState.replacementSkillDef, GenericSkill.SkillOverridePriority.Contextual);
     }
 
