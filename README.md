@@ -25,6 +25,14 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ## Changelog
 
+**1.4.3**
+
+- Fixes Vanilla pizza being 6 slices instead of 8
+
+**1.4.2**
+
+- Fixes bug where chimera insta-die before the fight
+
 **1.4.1**
 
 - Adds config for phase 2 clones after crushing leap (for extra insanity)

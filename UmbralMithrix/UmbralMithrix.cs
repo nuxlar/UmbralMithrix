@@ -17,7 +17,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.4.1")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.4.3")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -128,7 +128,7 @@ namespace UmbralMithrix
       HoldSkyLeap.duration = 3;
       ExitSkyLeap.waveProjectileCount = 12;
       ExitSkyLeap.recastChance = 0;
-      UltChannelState.waveProjectileCount = 6;
+      UltChannelState.waveProjectileCount = 8;
       UltChannelState.maxDuration = 8;
       UltChannelState.totalWaves = 4;
     }
@@ -580,8 +580,11 @@ namespace UmbralMithrix
       orig(self, body);
       if (shrineActivated)
       {
-        if ((phaseCounter == 1 || phaseCounter == 2) && (body.name == "LunarGolemBody(Clone)" || body.name == "LunarExploderBody(Clone)" || body.name == "LunarWispBody(Clone)"))
-          body.healthComponent.Suicide();
+        if (PhaseCounter.instance)
+        {
+          if ((PhaseCounter.instance.phase == 2 || PhaseCounter.instance.phase == 3) && (body.name == "LunarGolemBody(Clone)" || body.name == "LunarExploderBody(Clone)" || body.name == "LunarWispBody(Clone)"))
+            body.healthComponent.Suicide();
+        }
         // Make Mithrix an Umbra
         if (ModConfig.umbraToggle.Value && (body.name == "BrotherBody(Clone)" || body.name == "BrotherHurtBody(Clone)" || body.name == "BrotherGlassBody(Clone)"))
           self.inventory.GiveItemString(UmbralItem.name);
