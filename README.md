@@ -25,6 +25,10 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ## Changelog
 
+**1.4.4**
+
+- Removes clone death animation/noise (sound cue for crushing leap for when things are chaotic)
+
 **1.4.3**
 
 - Fixes Vanilla pizza being 6 slices instead of 8

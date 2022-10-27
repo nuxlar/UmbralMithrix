@@ -17,7 +17,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.4.3")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.4.4")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -62,6 +62,7 @@ namespace UmbralMithrix
       On.RoR2.Stage.Start += StageStart;
       On.RoR2.Artifacts.DoppelgangerInvasionManager.CreateDoppelganger += CreateDoppelganger;
       On.RoR2.CharacterMaster.OnBodyStart += CharacterMasterOnBodyStart;
+      On.EntityStates.BrotherMonster.SkyLeapDeathState.OnEnter += SkyLeapDeathStateOnEnter;
       On.EntityStates.Missions.BrotherEncounter.BrotherEncounterPhaseBaseState.OnEnter += BrotherEncounterPhaseBaseStateOnEnter;
       On.EntityStates.Missions.BrotherEncounter.Phase1.OnEnter += Phase1OnEnter;
       On.EntityStates.Missions.BrotherEncounter.Phase2.OnEnter += Phase2OnEnter;
@@ -607,6 +608,20 @@ namespace UmbralMithrix
         }
       }
     }
+
+    private void SkyLeapDeathStateOnEnter(On.EntityStates.BrotherMonster.SkyLeapDeathState.orig_OnEnter orig, EntityStates.BrotherMonster.SkyLeapDeathState self)
+    {
+      if (self.characterBody.name == "BrotherGlassBody(Clone)")
+      {
+        self.DestroyModel();
+        if (!NetworkServer.active)
+          return;
+        self.DestroyBodyAsapServer();
+      }
+      else
+        orig(self);
+    }
+
     // Phase 2 change to encounter spawns (Mithrix instead of Chimera)
     private void BrotherEncounterPhaseBaseStateOnEnter(On.EntityStates.Missions.BrotherEncounter.BrotherEncounterPhaseBaseState.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.BrotherEncounterPhaseBaseState self)
     {
