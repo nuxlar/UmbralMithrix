@@ -23,7 +23,17 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ![mod options](https://i.ibb.co/q9fC9jj/Screenshot-2022-09-12-165657.png)
 
+## Future Plans
+- Make glass clones more impactful rather than spammy (spawn on player and immediately smack)
+- "Fix" Phase 2 (new gimmick)
+- Edit Phase 3 (maybe combined HP bars) (different playstyles)
+- Rework Phase 4 (Mithy and Clone)
+
 ## Changelog
+
+**?.?.?**
+
+- 
 
 **1.4.4**
 

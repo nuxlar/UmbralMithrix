@@ -56,6 +56,7 @@ namespace UmbralMithrix
       AddContent();
       CreateDoppelItem();
       On.RoR2.Run.Start += OnRunStart;
+      On.EntityStates.EntityState.Update += ExplodeOnSprint;
       On.RoR2.CharacterBody.OnInventoryChanged += OnInventoryChanged;
       On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.OnEnter += ReadyToEndGameOnEnter;
       On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.FixedUpdate += ReadyToEndGameFixedUpdate;
@@ -446,7 +447,37 @@ namespace UmbralMithrix
               });
       };
     }
-
+    private void ExplodeOnSprint(On.EntityStates.EntityState.orig_Update orig, EntityStates.EntityState self)
+    {
+      orig(self);
+      if (self.characterBody)
+      {
+        if (self.characterBody.isSprinting && self.characterBody.name == "BrotherBody(Clone)")
+        {
+          float num1 = 180f / 12;
+          Vector3 point = Vector3.ProjectOnPlane(self.inputBank.aimDirection, Vector3.up);
+          elapsed += Time.deltaTime;
+          if (elapsed >= 8f)
+          {
+            Util.PlaySound("Play_voidRaid_m1_shoot", self.gameObject);
+            EffectManager.SimpleMuzzleFlash(FistSlam.slamImpactEffect, self.gameObject, WeaponSlam.muzzleString, false);
+            elapsed = elapsed % 8f;
+            for (int i = 0; i < 12; ++i)
+            {
+              Vector3 baseCircle = Quaternion.AngleAxis(num1 * i, Vector3.forward) * point;
+              Vector3 angledCircleA = Quaternion.AngleAxis(num1 * i, new Vector3(0, 1, 1)) * point;
+              Vector3 angledCircleB = Quaternion.AngleAxis(num1 * i, new Vector3(0, -1, 1)) * point;
+              for (int idx = 0; idx < ModConfig.SuperShardWeight.Value; idx++)
+                ProjectileManager.instance.FireProjectile(FireLunarShards.projectilePrefab, self.characterBody.coreTransform.position, Quaternion.LookRotation(baseCircle), self.gameObject, self.characterBody.damage * 0.1f / 12f, 0f, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
+              for (int idx = 0; idx < ModConfig.SuperShardWeight.Value; idx++)
+                ProjectileManager.instance.FireProjectile(FireLunarShards.projectilePrefab, self.characterBody.coreTransform.position, Quaternion.LookRotation(angledCircleB), self.gameObject, self.characterBody.damage * 0.1f / 12f, 0f, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
+              for (int idx = 0; idx < ModConfig.SuperShardWeight.Value; idx++)
+                ProjectileManager.instance.FireProjectile(FireLunarShards.projectilePrefab, self.characterBody.coreTransform.position, Quaternion.LookRotation(angledCircleA), self.gameObject, self.characterBody.damage * 0.1f / 12f, 0f, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
+            }
+          }
+        }
+      }
+    }
     private void OnInventoryChanged(On.RoR2.CharacterBody.orig_OnInventoryChanged orig, CharacterBody self)
     {
       orig(self);
@@ -581,6 +612,8 @@ namespace UmbralMithrix
       orig(self, body);
       if (shrineActivated)
       {
+        if (self.name == "BrotherGlassMaster(Clone)")
+          body.skillLocator.secondary.ExecuteIfReady();
         if (PhaseCounter.instance)
         {
           if ((PhaseCounter.instance.phase == 2 || PhaseCounter.instance.phase == 3) && (body.name == "LunarGolemBody(Clone)" || body.name == "LunarExploderBody(Clone)" || body.name == "LunarWispBody(Clone)"))
@@ -763,20 +796,17 @@ namespace UmbralMithrix
           }
           if (self.characterBody.name == "BrotherBody(Clone)")
           {
-            int playerCount = PlayerCharacterMasterController.instances.Count;
-            if (playerCount > 2)
-              playerCount = 2;
-            for (int i = 0; i < playerCount; i++)
+            for (int i = 0; i < PlayerCharacterMasterController.instances.Count; i++)
             {
               DirectorPlacementRule placementRule = new DirectorPlacementRule();
               placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
               placementRule.minDistance = 3f;
-              placementRule.maxDistance = 50f;
-              placementRule.spawnOnTarget = self.gameObject.transform;
+              placementRule.maxDistance = 20f;
+              placementRule.spawnOnTarget = PlayerCharacterMasterController.instances[i].master.GetBody().coreTransform;
               Xoroshiro128Plus rng = RoR2Application.rng;
               DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
               directorSpawnRequest.summonerBodyObject = self.gameObject;
-              directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 4));
+              directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 2));
               DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
             }
           }
@@ -803,18 +833,21 @@ namespace UmbralMithrix
         hasfired = false;
         if (phaseCounter != 2)
         {
-          for (int i = 0; i < 2; i++)
+          for (int idx = 0; idx < 2; idx++)
           {
-            DirectorPlacementRule placementRule = new DirectorPlacementRule();
-            placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
-            placementRule.minDistance = 3f;
-            placementRule.maxDistance = 50f;
-            placementRule.spawnOnTarget = self.gameObject.transform;
-            Xoroshiro128Plus rng = RoR2Application.rng;
-            DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
-            directorSpawnRequest.summonerBodyObject = self.gameObject;
-            directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 4));
-            DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
+            for (int i = 0; i < PlayerCharacterMasterController.instances.Count; i++)
+            {
+              DirectorPlacementRule placementRule = new DirectorPlacementRule();
+              placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
+              placementRule.minDistance = 3f;
+              placementRule.maxDistance = 20f;
+              placementRule.spawnOnTarget = PlayerCharacterMasterController.instances[i].master.GetBody().coreTransform;
+              Xoroshiro128Plus rng = RoR2Application.rng;
+              DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
+              directorSpawnRequest.summonerBodyObject = self.gameObject;
+              directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 2));
+              DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
+            }
           }
         }
       }
