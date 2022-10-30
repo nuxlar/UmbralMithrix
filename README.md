@@ -24,7 +24,7 @@ The mod is highly configurable. You can edit config values in-game and during ru
 ![mod options](https://i.ibb.co/q9fC9jj/Screenshot-2022-09-12-165657.png)
 
 ## Future Plans
-- Make glass clones more impactful rather than spammy (spawn on player and immediately smack)
+- More Anti-Air
 - "Fix" Phase 2 (new gimmick)
 - Edit Phase 3 (maybe combined HP bars) (different playstyles)
 - Rework Phase 4 (Mithy and Clone)
@@ -33,7 +33,14 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 **?.?.?**
 
-- 
+- Flame Wheel now spawns an adjacent wheel
+- Glass clones spawn near each player(s) instead of near mithrix
+- Glass clones are only in Phase 1
+- Phase 2 Changes
+  - No more Lunar Devastation not even as a config
+  - After Crushing Leap a clone spawns and does the Flame Wheel while the other hunts relentlessly
+- Phase 3 Changes
+  - 
 
 **1.4.4**
 

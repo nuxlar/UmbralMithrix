@@ -12,8 +12,7 @@ namespace UmbralMithrix
   {
     private float duration;
     private float baseDuration = 0.5f;
-    SpawnCard MithrixGlassCard = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Junk/BrotherGlass/cscBrotherGlass.asset").WaitForCompletion();
-
+    SpawnCard MithrixCard = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Base/Brother/cscBrother.asset").WaitForCompletion();
     public override void OnEnter()
     {
       base.OnEnter();
@@ -39,27 +38,27 @@ namespace UmbralMithrix
         return;
       if (PhaseCounter.instance.phase == 2 && ModConfig.phase2Clones.Value)
       {
-        for (int index = 0; index < 2; ++index)
+        DirectorPlacementRule placementRule = new DirectorPlacementRule();
+        placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
+        placementRule.minDistance = 3f;
+        placementRule.maxDistance = 20f;
+        placementRule.spawnOnTarget = this.gameObject.transform;
+        Xoroshiro128Plus rng = RoR2Application.rng;
+        DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixCard, placementRule, rng);
+        directorSpawnRequest.summonerBodyObject = this.gameObject;
+        directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult =>
         {
-          DirectorPlacementRule placementRule = new DirectorPlacementRule();
-          placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
-          placementRule.minDistance = 3f;
-          placementRule.maxDistance = 20f;
-          placementRule.spawnOnTarget = this.gameObject.transform;
-          Xoroshiro128Plus rng = RoR2Application.rng;
-          DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
-          directorSpawnRequest.summonerBodyObject = this.gameObject;
-          directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, ExitSkyLeap.cloneDuration));
-          DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
-        }
+          spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, ExitSkyLeap.cloneDuration);
+          spawnResult.spawnedInstance.GetComponent<CharacterMaster>().GetBody().skillLocator.special.skillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(UltEnterState));
+        });
+        DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
       }
+      if (PhaseCounter.instance.phase == 2)
+        return;
       GenericSkill genericSkill = (bool)this.skillLocator ? this.skillLocator.special : null;
       if (!(bool)genericSkill)
         return;
-      if (PhaseCounter.instance.phase == 2 && ModConfig.phase2Ult.Value)
-        UltChannelState.replacementSkillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(LunarDevastationEnter));
-      else
-        UltChannelState.replacementSkillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(UltEnterState));
+      UltChannelState.replacementSkillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(UltEnterState));
       genericSkill.SetSkillOverride(this.outer, UltChannelState.replacementSkillDef, GenericSkill.SkillOverridePriority.Contextual);
     }
 

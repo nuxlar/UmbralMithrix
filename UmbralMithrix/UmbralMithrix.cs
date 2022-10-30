@@ -56,7 +56,6 @@ namespace UmbralMithrix
       AddContent();
       CreateDoppelItem();
       On.RoR2.Run.Start += OnRunStart;
-      On.EntityStates.EntityState.Update += ExplodeOnSprint;
       On.RoR2.CharacterBody.OnInventoryChanged += OnInventoryChanged;
       On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.OnEnter += ReadyToEndGameOnEnter;
       On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.FixedUpdate += ReadyToEndGameFixedUpdate;
@@ -78,6 +77,8 @@ namespace UmbralMithrix
       On.EntityStates.BrotherMonster.Weapon.FireLunarShards.OnEnter += FireLunarShardsOnEnter;
       On.EntityStates.BrotherMonster.FistSlam.OnEnter += FistSlamOnEnter;
       On.EntityStates.BrotherMonster.FistSlam.FixedUpdate += FistSlamFixedUpdate;
+      On.EntityStates.BrotherMonster.UltChannelState.FireWave += UltChannelStateFireWave;
+      On.EntityStates.BrotherMonster.UltExitState.OnExit += UltExitStateOnExit;
       On.EntityStates.BrotherMonster.SpellChannelEnterState.OnEnter += SpellChannelEnterStateOnEnter;
       On.EntityStates.BrotherMonster.SpellChannelState.OnEnter += SpellChannelStateOnEnter;
       On.EntityStates.BrotherMonster.SpellChannelState.OnExit += SpellChannelStateOnExit;
@@ -215,9 +216,10 @@ namespace UmbralMithrix
       HoldSkyLeap.duration = ModConfig.JumpPause.Value;
       ExitSkyLeap.waveProjectileCount = ModConfig.JumpWaveCount.Value;
       ExitSkyLeap.recastChance = ModConfig.JumpRecast.Value;
-      UltChannelState.waveProjectileCount = (int)(ModConfig.UltimateWaves.Value * 2);
+      UltChannelState.waveProjectileCount = (int)(ModConfig.UltimateWaves.Value);
       UltChannelState.maxDuration = ModConfig.UltimateDuration.Value;
       UltChannelState.totalWaves = ModConfig.UltimateCount.Value;
+      ExitSkyLeap.cloneDuration = (int)Math.Round(ModConfig.SpecialCD.Value);
     }
 
     private void AdjustBaseSkills()
@@ -447,37 +449,7 @@ namespace UmbralMithrix
               });
       };
     }
-    private void ExplodeOnSprint(On.EntityStates.EntityState.orig_Update orig, EntityStates.EntityState self)
-    {
-      orig(self);
-      if (self.characterBody)
-      {
-        if (self.characterBody.isSprinting && self.characterBody.name == "BrotherBody(Clone)")
-        {
-          float num1 = 180f / 12;
-          Vector3 point = Vector3.ProjectOnPlane(self.inputBank.aimDirection, Vector3.up);
-          elapsed += Time.deltaTime;
-          if (elapsed >= 8f)
-          {
-            Util.PlaySound("Play_voidRaid_m1_shoot", self.gameObject);
-            EffectManager.SimpleMuzzleFlash(FistSlam.slamImpactEffect, self.gameObject, WeaponSlam.muzzleString, false);
-            elapsed = elapsed % 8f;
-            for (int i = 0; i < 12; ++i)
-            {
-              Vector3 baseCircle = Quaternion.AngleAxis(num1 * i, Vector3.forward) * point;
-              Vector3 angledCircleA = Quaternion.AngleAxis(num1 * i, new Vector3(0, 1, 1)) * point;
-              Vector3 angledCircleB = Quaternion.AngleAxis(num1 * i, new Vector3(0, -1, 1)) * point;
-              for (int idx = 0; idx < ModConfig.SuperShardWeight.Value; idx++)
-                ProjectileManager.instance.FireProjectile(FireLunarShards.projectilePrefab, self.characterBody.coreTransform.position, Quaternion.LookRotation(baseCircle), self.gameObject, self.characterBody.damage * 0.1f / 12f, 0f, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
-              for (int idx = 0; idx < ModConfig.SuperShardWeight.Value; idx++)
-                ProjectileManager.instance.FireProjectile(FireLunarShards.projectilePrefab, self.characterBody.coreTransform.position, Quaternion.LookRotation(angledCircleB), self.gameObject, self.characterBody.damage * 0.1f / 12f, 0f, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
-              for (int idx = 0; idx < ModConfig.SuperShardWeight.Value; idx++)
-                ProjectileManager.instance.FireProjectile(FireLunarShards.projectilePrefab, self.characterBody.coreTransform.position, Quaternion.LookRotation(angledCircleA), self.gameObject, self.characterBody.damage * 0.1f / 12f, 0f, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
-            }
-          }
-        }
-      }
-    }
+
     private void OnInventoryChanged(On.RoR2.CharacterBody.orig_OnInventoryChanged orig, CharacterBody self)
     {
       orig(self);
@@ -614,7 +586,7 @@ namespace UmbralMithrix
       {
         if (self.name == "BrotherGlassMaster(Clone)")
           body.skillLocator.secondary.ExecuteIfReady();
-        if (PhaseCounter.instance)
+        if ((bool)PhaseCounter.instance)
         {
           if ((PhaseCounter.instance.phase == 2 || PhaseCounter.instance.phase == 3) && (body.name == "LunarGolemBody(Clone)" || body.name == "LunarExploderBody(Clone)" || body.name == "LunarWispBody(Clone)"))
             body.healthComponent.Suicide();
@@ -654,7 +626,27 @@ namespace UmbralMithrix
       else
         orig(self);
     }
-
+    private void UltChannelStateFireWave(On.EntityStates.BrotherMonster.UltChannelState.orig_FireWave orig, EntityStates.BrotherMonster.UltChannelState self)
+    {
+      float num2 = 360f / ModConfig.UltimateWaves.Value;
+      Vector3 vector3 = Vector3.ProjectOnPlane(self.inputBank.aimDirection, Vector3.up);
+      Vector3 position = self.FindModelChild(EntityStates.BrotherMonster.WeaponSlam.muzzleString).position + new Vector3(UnityEngine.Random.Range(-50f, 50f), 0.0f, UnityEngine.Random.Range(-50f, 50f));
+      for (int index = 0; index < ModConfig.UltimateWaves.Value; ++index)
+      {
+        Vector3 forward = Quaternion.AngleAxis(num2 * (float)index, Vector3.up) * vector3;
+        ProjectileManager.instance.FireProjectile(UltChannelState.waveProjectileLeftPrefab, position, Util.QuaternionSafeLookRotation(forward), self.gameObject, self.characterBody.damage * 3.5f, EntityStates.BrotherMonster.FistSlam.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master));
+      }
+      orig(self);
+    }
+    private void UltExitStateOnExit(On.EntityStates.BrotherMonster.UltExitState.orig_OnExit orig, EntityStates.BrotherMonster.UltExitState self)
+    {
+      if ((bool)PhaseCounter.instance)
+      {
+        if (PhaseCounter.instance.phase == 2)
+          self.characterBody.skillLocator.special.skillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(EnterCrushingLeap));
+      }
+      orig(self);
+    }
     // Phase 2 change to encounter spawns (Mithrix instead of Chimera)
     private void BrotherEncounterPhaseBaseStateOnEnter(On.EntityStates.Missions.BrotherEncounter.BrotherEncounterPhaseBaseState.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.BrotherEncounterPhaseBaseState self)
     {
@@ -794,20 +786,23 @@ namespace UmbralMithrix
               ProjectileManager.instance.FireProjectile(FireLunarShards.projectilePrefab, aimRay.origin, Quaternion.LookRotation(aimRay.direction), self.gameObject, self.characterBody.damage * 0.1f / 12f, 0f, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
             }
           }
-          if (self.characterBody.name == "BrotherBody(Clone)")
+          if ((bool)PhaseCounter.instance)
           {
-            for (int i = 0; i < PlayerCharacterMasterController.instances.Count; i++)
+            if (self.characterBody.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase == 1)
             {
-              DirectorPlacementRule placementRule = new DirectorPlacementRule();
-              placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
-              placementRule.minDistance = 3f;
-              placementRule.maxDistance = 20f;
-              placementRule.spawnOnTarget = PlayerCharacterMasterController.instances[i].master.GetBody().coreTransform;
-              Xoroshiro128Plus rng = RoR2Application.rng;
-              DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
-              directorSpawnRequest.summonerBodyObject = self.gameObject;
-              directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 2));
-              DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
+              for (int i = 0; i < PlayerCharacterMasterController.instances.Count; i++)
+              {
+                DirectorPlacementRule placementRule = new DirectorPlacementRule();
+                placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
+                placementRule.minDistance = 3f;
+                placementRule.maxDistance = 20f;
+                placementRule.spawnOnTarget = PlayerCharacterMasterController.instances[i].master.GetBody().coreTransform;
+                Xoroshiro128Plus rng = RoR2Application.rng;
+                DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
+                directorSpawnRequest.summonerBodyObject = self.gameObject;
+                directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 2));
+                DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
+              }
             }
           }
         }
@@ -831,9 +826,9 @@ namespace UmbralMithrix
           projectilePrefab.GetComponent<ProjectileController>().ghostPrefab.transform.localScale = new Vector3(4f, 4f, 4f);
         }
         hasfired = false;
-        if (phaseCounter != 2)
+        if ((bool)PhaseCounter.instance)
         {
-          for (int idx = 0; idx < 2; idx++)
+          if (self.characterBody.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase == 1)
           {
             for (int i = 0; i < PlayerCharacterMasterController.instances.Count; i++)
             {
@@ -858,10 +853,10 @@ namespace UmbralMithrix
     {
       if (phaseCounter == 1)
       {
-        if (PhaseCounter.instance)
+        if ((bool)PhaseCounter.instance)
           PhaseCounter.instance.phase = 3;
         orig(self);
-        if (PhaseCounter.instance)
+        if ((bool)PhaseCounter.instance)
           PhaseCounter.instance.phase = 2;
       }
       else
