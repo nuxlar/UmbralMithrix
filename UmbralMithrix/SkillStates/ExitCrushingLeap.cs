@@ -36,12 +36,12 @@ namespace UmbralMithrix
         return;
       if (PhaseCounter.instance.phase == 1)
         return;
-      if (PhaseCounter.instance.phase == 2 && ModConfig.phase2Clones.Value)
+      if (PhaseCounter.instance.phase == 2)
       {
         DirectorPlacementRule placementRule = new DirectorPlacementRule();
-        placementRule.placementMode = DirectorPlacementRule.PlacementMode.Approximate;
+        placementRule.placementMode = this.isGrounded ? DirectorPlacementRule.PlacementMode.NearestNode : DirectorPlacementRule.PlacementMode.Direct;
         placementRule.minDistance = 3f;
-        placementRule.maxDistance = 20f;
+        placementRule.maxDistance = 40f;
         placementRule.spawnOnTarget = this.gameObject.transform;
         Xoroshiro128Plus rng = RoR2Application.rng;
         DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixCard, placementRule, rng);
