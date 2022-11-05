@@ -123,11 +123,11 @@ namespace UmbralMithrix
       basearmor = config.Bind("Stats", "Base Armor", 30f, "Vanilla: 20");
       baseattackspeed = config.Bind("Stats", "Base Attack Speed", 1.25f, "Vanilla: 1");
 
-      basespeed = config.Bind("Movement", "Base Move Speed", 16f, "Vanilla: 15");
+      basespeed = config.Bind("Movement", "Base Move Speed", 15f, "Vanilla: 15");
       mass = config.Bind("Movement", "Mass", 5000f, "Recommended to increase if you increase his movement speed. Vanilla: 900");
-      turningspeed = config.Bind("Movement", "Turn Speed", 540f, "Vanilla: 270");
+      turningspeed = config.Bind("Movement", "Turn Speed", 450f, "Vanilla: 270");
       jumpingpower = config.Bind("Movement", "Moon Shoes", 75f, "How high Mithrix jumps. Vanilla: 25");
-      acceleration = config.Bind("Movement", "Acceleration", 350f, "Vanilla: 45");
+      acceleration = config.Bind("Movement", "Acceleration", 300f, "Vanilla: 45");
       jumpcount = config.Bind("Movement", "Jump Count", 3, "Probably doesn't do anything. Vanilla: 0");
       aircontrol = config.Bind("Movement", "Air Control", 1.5f, "Vanilla: 0.25");
 
@@ -148,8 +148,9 @@ namespace UmbralMithrix
       P2UltDuration = config.Bind("New Skills", "P2 Ult Duration", 8f, "How long phase 2 ultimate lasts. Vanilla: N/A");
       P2SuperShardInterval = config.Bind("New Skills", "P2 Ult Super Shards", 0.6f, "Interval at which super shards are fired in P2 Ult in seconds. Vanilla: N/A");
 
+      SlamOrbProjectileCount = config.Bind("Skill Mods", "Orb Projectile Count", 6, "Orbs fired by weapon slam in a circle. Vanilla: N/A");
       LunarShardAdd = config.Bind("Skill Mods", "Shard Add Count", 2, "Bonus shards added to each shot of lunar shards. Vanilla: N/A");
-      UltimateWaves = config.Bind("Skill Mods", "P3 Ult Lines", 8, "Total lines in ultimate per burst. Vanilla: 4");
+      UltimateWaves = config.Bind("Skill Mods", "P3 Ult Lines", 10, "Total lines in ultimate per burst. Vanilla: 4");
       UltimateCount = config.Bind("Skill Mods", "P3 Ult Bursts", 6, "Total times the ultimate fires. Vanilla: 4");
       UltimateDuration = config.Bind("Skill Mods", "P3 Ult Duration", 6f, "How long ultimate lasts. Vanilla: 8");
       JumpRecast = config.Bind("Skill Mods", "Recast Chance", 0f, "Chance Mithrix has to recast his jump skill. USE WITH CAUTION. Vanilla: 0");
@@ -220,6 +221,7 @@ namespace UmbralMithrix
       ModSettingsManager.AddOption(new StepSliderOption(P2UltDuration, new StepSliderConfig() { min = 4, max = 12, increment = 0.5f }));
       ModSettingsManager.AddOption(new IntSliderOption(P2UltOrbCount, new IntSliderConfig() { min = 0, max = 12 }));
       // Skill Mods
+      ModSettingsManager.AddOption(new IntSliderOption(SlamOrbProjectileCount, new IntSliderConfig() { min = 0, max = 16 }));
       ModSettingsManager.AddOption(new IntSliderOption(LunarShardAdd, new IntSliderConfig() { min = 1, max = 5 }));
       ModSettingsManager.AddOption(new IntSliderOption(UltimateWaves, new IntSliderConfig() { min = 4, max = 18 }));
       ModSettingsManager.AddOption(new StepSliderOption(UltimateDuration, new StepSliderConfig() { min = 5, max = 10, increment = 0.25f }));

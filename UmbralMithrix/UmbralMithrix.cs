@@ -7,6 +7,7 @@ using EntityStates.BrotherMonster.Weapon;
 using R2API;
 using R2API.Utils;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
@@ -34,19 +35,24 @@ namespace UmbralMithrix
     public int phaseCounter = 0;
     float elapsed = 0;
     bool shrineActivated = false;
+    public static bool spawnedClone = false;
     bool doppelEventHasTriggered = false;
     HashSet<ItemIndex> doppelBlacklist = new();
-    ItemDef UmbralItem;
+    public static ItemDef UmbralItem;
+    IEnumerable<CharacterBody> mithies = null;
     GameObject Mithrix = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherBody.prefab").WaitForCompletion();
-    SkillDef originalDash;
     GameObject Obelisk = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/mysteryspace/MSObelisk.prefab").WaitForCompletion();
-
     GameObject MithrixHurt = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherHurtBody.prefab").WaitForCompletion();
     GameObject BrotherHaunt = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/BrotherHaunt/BrotherHauntBody.prefab").WaitForCompletion();
     SpawnCard MithrixCard = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Base/Brother/cscBrother.asset").WaitForCompletion();
     SpawnCard MithrixHurtCard = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Base/Brother/cscBrotherHurt.asset").WaitForCompletion();
     GameObject MithrixGlass = Addressables.LoadAssetAsync<GameObject>("RoR2/Junk/BrotherGlass/BrotherGlassBody.prefab").WaitForCompletion();
     SpawnCard MithrixGlassCard = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Junk/BrotherGlass/cscBrotherGlass.asset").WaitForCompletion();
+    GameObject Exploder = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarExploder/LunarExploderBody.prefab").WaitForCompletion();
+    GameObject LunarGolem = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarGolem/LunarGolemBody.prefab").WaitForCompletion();
+    GameObject LunarWisp = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarWisp/LunarWispBody.prefab").WaitForCompletion();
+    GameObject ArchWisp = Addressables.LoadAssetAsync<GameObject>("RoR2/Junk/ArchWisp/ArchWispBody.prefab").WaitForCompletion();
+
     static GameObject exploderProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarExploder/LunarExploderShardProjectile.prefab").WaitForCompletion();
     static GameObject golemProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarGolem/LunarGolemTwinShotProjectile.prefab").WaitForCompletion();
 
@@ -61,6 +67,7 @@ namespace UmbralMithrix
       On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.OnEnter += ReadyToEndGameOnEnter;
       On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.FixedUpdate += ReadyToEndGameFixedUpdate;
       On.RoR2.Stage.Start += StageStart;
+      On.RoR2.HealthComponent.TakeDamage += TakeDamage;
       On.RoR2.Artifacts.DoppelgangerInvasionManager.CreateDoppelganger += CreateDoppelganger;
       On.RoR2.CharacterMaster.OnBodyStart += CharacterMasterOnBodyStart;
       On.EntityStates.BrotherMonster.SkyLeapDeathState.OnEnter += SkyLeapDeathStateOnEnter;
@@ -79,7 +86,6 @@ namespace UmbralMithrix
       On.EntityStates.BrotherMonster.FistSlam.OnEnter += FistSlamOnEnter;
       On.EntityStates.BrotherMonster.FistSlam.FixedUpdate += FistSlamFixedUpdate;
       On.EntityStates.BrotherMonster.UltChannelState.FireWave += UltChannelStateFireWave;
-      On.EntityStates.BrotherMonster.UltExitState.OnExit += UltExitStateOnExit;
       On.EntityStates.BrotherMonster.SpellChannelEnterState.OnEnter += SpellChannelEnterStateOnEnter;
       On.EntityStates.BrotherMonster.SpellChannelState.OnEnter += SpellChannelStateOnEnter;
       On.EntityStates.BrotherMonster.SpellChannelState.OnExit += SpellChannelStateOnExit;
@@ -88,7 +94,6 @@ namespace UmbralMithrix
       On.EntityStates.BrotherMonster.StaggerExit.OnEnter += StaggerExitOnEnter;
       On.EntityStates.BrotherMonster.StaggerLoop.OnEnter += StaggerLoopOnEnter;
       On.EntityStates.BrotherMonster.TrueDeathState.OnEnter += TrueDeathStateOnEnter;
-      originalDash = Mithrix.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef;
     }
 
     private void RevertToVanillaStats()
@@ -158,7 +163,9 @@ namespace UmbralMithrix
       BashChange.baseMaxStock = 1;
 
       SkillFamily Dash = SklLocate.utility.skillFamily;
-      Dash.variants[0].skillDef = originalDash;
+      SkillDef DashChange = Dash.variants[0].skillDef;
+      DashChange.baseMaxStock = 2;
+      DashChange.baseRechargeInterval = 3;
 
       SkillFamily Ult = SklLocate.special.skillFamily;
       SkillDef UltChange = Ult.variants[0].skillDef;
@@ -303,8 +310,8 @@ namespace UmbralMithrix
       CharacterBody MithrixBody = Mithrix.GetComponent<CharacterBody>();
       CharacterDirection MithrixDirection = Mithrix.GetComponent<CharacterDirection>();
 
-      MithrixBody.baseMaxHealth = playerCount > 2 ? ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier) : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 2;
-      MithrixBody.levelMaxHealth = playerCount > 2 ? ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier) : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 2;
+      MithrixBody.baseMaxHealth = ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier);
+      MithrixBody.levelMaxHealth = ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier);
 
       MithrixBody.baseMoveSpeed = ModConfig.basespeed.Value + (ModConfig.basespeed.Value * mobilityMultiplier);
       MithrixBody.baseAcceleration = ModConfig.acceleration.Value + (ModConfig.acceleration.Value * mobilityMultiplier);
@@ -313,7 +320,7 @@ namespace UmbralMithrix
 
       WeaponSlam.duration = (3.5f / ModConfig.baseattackspeed.Value);
       UltChannelState.waveProjectileCount = ModConfig.UltimateWaves.Value;
-      UltChannelState.maxDuration = ModConfig.UltimateDuration.Value;
+      UltChannelState.maxDuration = ModConfig.UltimateDuration.Value + 2;
     }
 
     private void AdjustPhase4Stats()
@@ -512,6 +519,26 @@ namespace UmbralMithrix
       RevertToVanillaSkills();
       orig(self);
     }
+
+    private void TakeDamage(On.RoR2.HealthComponent.orig_TakeDamage orig, RoR2.HealthComponent self, DamageInfo damageInfo)
+    {
+      orig(self, damageInfo);
+      /**
+      if (shrineActivated && (bool)PhaseCounter.instance)
+      {
+        if (self.body.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase == 3)
+        {
+          if (mithies == null)
+            mithies = Resources.FindObjectsOfTypeAll<CharacterBody>().Where(obj => obj.name == "BrotherBody(Clone)");
+          foreach (CharacterBody mithy in mithies)
+          {
+            if (mithy.netId != self.netId)
+              mithy.healthComponent.health = self.health;
+          }
+        }
+      }**/
+    }
+
     // Prevent freezing from affecting Mithrix after 10 stages or if the config is enabled
     private void FrozenStateOnEnter(On.EntityStates.FrozenState.orig_OnEnter orig, EntityStates.FrozenState self)
     {
@@ -595,7 +622,7 @@ namespace UmbralMithrix
     private void SummonOnSprint(On.EntityStates.EntityState.orig_Update orig, EntityStates.EntityState self)
     {
       orig(self);
-      if (self.characterBody && shrineActivated)
+      if (self.characterBody && shrineActivated && !spawnedClone)
       {
         if ((bool)PhaseCounter.instance)
         {
@@ -610,8 +637,8 @@ namespace UmbralMithrix
                 DirectorPlacementRule placementRule = new DirectorPlacementRule();
                 placementRule.placementMode = PlayerCharacterMasterController.instances[i].bodyMotor.isGrounded ? DirectorPlacementRule.PlacementMode.NearestNode : DirectorPlacementRule.PlacementMode.Direct;
                 placementRule.minDistance = 3f;
-                placementRule.maxDistance = 20f;
-                placementRule.position = PlayerCharacterMasterController.instances[i].bodyMotor.isGrounded ? PlayerCharacterMasterController.instances[i].master.GetBody().corePosition : new Vector3(PlayerCharacterMasterController.instances[i].master.GetBody().corePosition.x + UnityEngine.Random.Range(3f, 20f), PlayerCharacterMasterController.instances[i].master.GetBody().corePosition.y, PlayerCharacterMasterController.instances[i].master.GetBody().corePosition.z);
+                placementRule.maxDistance = 10f;
+                placementRule.position = PlayerCharacterMasterController.instances[i].bodyMotor.isGrounded ? PlayerCharacterMasterController.instances[i].master.GetBody().corePosition : new Vector3(PlayerCharacterMasterController.instances[i].master.GetBody().corePosition.x + UnityEngine.Random.Range(3f, 20f), PlayerCharacterMasterController.instances[i].master.GetBody().corePosition.y, PlayerCharacterMasterController.instances[i].master.GetBody().corePosition.z + UnityEngine.Random.Range(3f, 20f));
                 Xoroshiro128Plus rng = RoR2Application.rng;
                 DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
                 directorSpawnRequest.summonerBodyObject = self.gameObject;
@@ -629,13 +656,14 @@ namespace UmbralMithrix
       orig(self, body);
       if (shrineActivated)
       {
-        if ((bool)PhaseCounter.instance)
-        {
-          if ((PhaseCounter.instance.phase == 2 || PhaseCounter.instance.phase == 3) && (body.name == "LunarGolemBody(Clone)" || body.name == "LunarExploderBody(Clone)" || body.name == "LunarWispBody(Clone)"))
-            body.healthComponent.Suicide();
-        }
+        if ((PhaseCounter.instance.phase == 2 || PhaseCounter.instance.phase == 3) && (body.name == "LunarGolemBody(Clone)" || body.name == "LunarExploderBody(Clone)" || body.name == "LunarWispBody(Clone)"))
+          body.healthComponent.Suicide();
+        if (body.name == "BrotherBody(Clone)" && spawnedClone && PhaseCounter.instance.phase == 2)
+          self.inventory.GiveItemString(UmbralItem.name);
+        if (body.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase == 2)
+          spawnedClone = true;
         // Make Mithrix an Umbra
-        if (ModConfig.umbraToggle.Value && (body.name == "BrotherBody(Clone)" || body.name == "BrotherHurtBody(Clone)" || body.name == "BrotherGlassBody(Clone)"))
+        if ((body.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase == 3) || (body.name == "BrotherHurtBody(Clone)" || body.name == "BrotherGlassBody(Clone)"))
           self.inventory.GiveItemString(UmbralItem.name);
         if (self.name == "BrotherHurtMaster(Clone)" && !ModConfig.doppelPhase4.Value)
         {
@@ -659,51 +687,59 @@ namespace UmbralMithrix
 
     private void SkyLeapDeathStateOnEnter(On.EntityStates.BrotherMonster.SkyLeapDeathState.orig_OnEnter orig, EntityStates.BrotherMonster.SkyLeapDeathState self)
     {
-      if (self.characterBody.name == "BrotherGlassBody(Clone)")
+      if (shrineActivated)
       {
-        self.DestroyModel();
-        if (!NetworkServer.active)
+        if (self.characterBody.name == "BrotherGlassBody(Clone)")
+        {
+          self.DestroyModel();
+          if (!NetworkServer.active)
+            return;
+          self.DestroyBodyAsapServer();
           return;
-        self.DestroyBodyAsapServer();
+        }
+        if (self.characterBody.name == "BrotherBody(Clone)" && self.characterBody.inventory.GetItemCount(UmbralItem) > 0)
+          spawnedClone = false;
       }
-      else
-        orig(self);
+      orig(self);
     }
     private void UltChannelStateFireWave(On.EntityStates.BrotherMonster.UltChannelState.orig_FireWave orig, EntityStates.BrotherMonster.UltChannelState self)
     {
       if (shrineActivated)
       {
-        // half lines for phase 2 and quarter lines for phase 3
-        int lines = ModConfig.UltimateWaves.Value / 2;
-        if (PhaseCounter.instance)
         {
-          if (PhaseCounter.instance.phase == 3)
-            lines = ModConfig.UltimateWaves.Value / 4;
-        }
-        float num2 = 360f / lines;
-        Vector3 vector3 = Vector3.ProjectOnPlane(self.inputBank.aimDirection, Vector3.up);
-        for (int i = 0; i < PlayerCharacterMasterController.instances.Count; i++)
-        {
-          // the extra wheel follows each player but stays at mithy's level in case theyre mid air
-          Vector3 position = new Vector3(PlayerCharacterMasterController.instances[i].body.corePosition.x, self.characterBody.footPosition.y, PlayerCharacterMasterController.instances[i].body.corePosition.z) + new Vector3(UnityEngine.Random.Range(-50f, 50f), 0.0f, UnityEngine.Random.Range(-50f, 50f));
-          for (int index = 0; index < lines; ++index)
+          // prevents pizza at Mithrix instead only following each player
+          if (PhaseCounter.instance)
           {
-            Vector3 forward = Quaternion.AngleAxis(num2 * (float)index, Vector3.up) * vector3;
-            ProjectileManager.instance.FireProjectile(UltChannelState.waveProjectileLeftPrefab, position, Util.QuaternionSafeLookRotation(forward), self.gameObject, self.characterBody.damage * 3.5f, EntityStates.BrotherMonster.FistSlam.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master));
+            UltChannelState.waveProjectileCount = 0;
+            int playerCount = PlayerCharacterMasterController.instances.Count;
+            int pizzaLines = ModConfig.UltimateWaves.Value;
+            if (PhaseCounter.instance.phase == 3)
+              pizzaLines = ModConfig.UltimateWaves.Value - 2;
+
+            // dividing lines by player count so multiplayer doesn't have unavoidable pizza
+            float num = 360f / pizzaLines;
+            Vector3 normalized = Vector3.ProjectOnPlane(UnityEngine.Random.onUnitSphere, Vector3.up).normalized;
+            GameObject prefab = UltChannelState.waveProjectileLeftPrefab;
+            if ((double)UnityEngine.Random.value <= 0.5)
+              prefab = UltChannelState.waveProjectileRightPrefab;
+
+            // get random idx to grab a random player
+            System.Random r = new System.Random();
+            int rIdx = r.Next(0, playerCount - 1);
+            PlayerCharacterMasterController player = PlayerCharacterMasterController.instances[rIdx];
+
+            Vector3 position = new Vector3(player.body.footPosition.x, self.characterBody.footPosition.y, player.body.footPosition.z) + new Vector3(UnityEngine.Random.Range(-50f, 50f), 0.0f, UnityEngine.Random.Range(-50f, 50f));
+            for (int index = 0; index < pizzaLines; ++index)
+            {
+              Vector3 forward = Quaternion.AngleAxis(num * (float)index, Vector3.up) * normalized;
+              ProjectileManager.instance.FireProjectile(prefab, position, Util.QuaternionSafeLookRotation(forward), self.gameObject, self.characterBody.damage * UltChannelState.waveProjectileDamageCoefficient, UltChannelState.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master));
+            }
           }
         }
       }
       orig(self);
     }
-    private void UltExitStateOnExit(On.EntityStates.BrotherMonster.UltExitState.orig_OnExit orig, EntityStates.BrotherMonster.UltExitState self)
-    {
-      if ((bool)PhaseCounter.instance && shrineActivated)
-      {
-        if (PhaseCounter.instance.phase == 2)
-          self.characterBody.skillLocator.special.skillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(EnterCrushingLeap));
-      }
-      orig(self);
-    }
+
     // Phase 2 change to encounter spawns (Mithrix instead of Chimera)
     private void BrotherEncounterPhaseBaseStateOnEnter(On.EntityStates.Missions.BrotherEncounter.BrotherEncounterPhaseBaseState.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.BrotherEncounterPhaseBaseState self)
     {
@@ -780,9 +816,11 @@ namespace UmbralMithrix
 
     private void Phase1OnEnter(On.EntityStates.Missions.BrotherEncounter.Phase1.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.Phase1 self)
     {
-      doppelEventHasTriggered = false;
       if (shrineActivated)
       {
+        doppelEventHasTriggered = false;
+        spawnedClone = false;
+        mithies = null;
         Logger.LogMessage("Accursing the King of Nothing");
         AdjustBaseSkills();
         AdjustBaseStats();
@@ -843,19 +881,27 @@ namespace UmbralMithrix
 
           if ((bool)PhaseCounter.instance)
           {
-            if (self.characterBody.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase == 1)
+            if (self.characterBody.name == "BrotherBody(Clone)")
             {
-              for (int i = 0; i < PlayerCharacterMasterController.instances.Count; i++)
+              if (PhaseCounter.instance.phase != 1)
+              {
+                Vector3 vector3 = Vector3.ProjectOnPlane(self.inputBank.aimDirection, Vector3.up);
+                Vector3 footPosition = self.characterBody.footPosition;
+                Vector3 forward = Quaternion.AngleAxis(0, Vector3.up) * vector3;
+                ProjectileManager.instance.FireProjectile(WeaponSlam.waveProjectilePrefab, footPosition, Util.QuaternionSafeLookRotation(forward), self.gameObject, self.characterBody.damage * WeaponSlam.waveProjectileDamageCoefficient, WeaponSlam.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master));
+              }
+
+              if (PhaseCounter.instance.phase != 3 && !spawnedClone)
               {
                 DirectorPlacementRule placementRule = new DirectorPlacementRule();
-                placementRule.placementMode = PlayerCharacterMasterController.instances[i].bodyMotor.isGrounded ? DirectorPlacementRule.PlacementMode.NearestNode : DirectorPlacementRule.PlacementMode.Direct;
+                placementRule.placementMode = DirectorPlacementRule.PlacementMode.NearestNode;
                 placementRule.minDistance = 3f;
-                placementRule.maxDistance = 20f;
-                placementRule.position = PlayerCharacterMasterController.instances[i].bodyMotor.isGrounded ? PlayerCharacterMasterController.instances[i].master.GetBody().corePosition : new Vector3(PlayerCharacterMasterController.instances[i].master.GetBody().corePosition.x + UnityEngine.Random.Range(3f, 20f), PlayerCharacterMasterController.instances[i].master.GetBody().corePosition.y, PlayerCharacterMasterController.instances[i].master.GetBody().corePosition.z);
+                placementRule.maxDistance = 40f;
+                placementRule.position = self.characterBody.footPosition;
                 Xoroshiro128Plus rng = RoR2Application.rng;
                 DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
                 directorSpawnRequest.summonerBodyObject = self.gameObject;
-                directorSpawnRequest.onSpawnedServer = (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 2));
+                directorSpawnRequest.onSpawnedServer = (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 4));
                 DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
               }
             }
@@ -870,26 +916,24 @@ namespace UmbralMithrix
       if (shrineActivated)
       {
         GameObject projectilePrefab = WeaponSlam.pillarProjectilePrefab;
-        projectilePrefab.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
-        projectilePrefab.GetComponent<ProjectileController>().ghostPrefab.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
+        projectilePrefab.transform.localScale = new Vector3(3.5f, 3.5f, 3.5f);
+        projectilePrefab.GetComponent<ProjectileController>().ghostPrefab.transform.localScale = new Vector3(3.5f, 3.5f, 3.5f);
         hasfired = false;
         if ((bool)PhaseCounter.instance)
         {
-          if (self.characterBody.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase == 1)
+
+          if (self.characterBody.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase != 3 && !spawnedClone)
           {
-            for (int i = 0; i < PlayerCharacterMasterController.instances.Count; i++)
-            {
-              DirectorPlacementRule placementRule = new DirectorPlacementRule();
-              placementRule.placementMode = PlayerCharacterMasterController.instances[i].bodyMotor.isGrounded ? DirectorPlacementRule.PlacementMode.NearestNode : DirectorPlacementRule.PlacementMode.Direct;
-              placementRule.minDistance = 3f;
-              placementRule.maxDistance = 20f;
-              placementRule.position = PlayerCharacterMasterController.instances[i].bodyMotor.isGrounded ? PlayerCharacterMasterController.instances[i].master.GetBody().corePosition : new Vector3(PlayerCharacterMasterController.instances[i].master.GetBody().corePosition.x + UnityEngine.Random.Range(3f, 20f), PlayerCharacterMasterController.instances[i].master.GetBody().corePosition.y, PlayerCharacterMasterController.instances[i].master.GetBody().corePosition.z);
-              Xoroshiro128Plus rng = RoR2Application.rng;
-              DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
-              directorSpawnRequest.summonerBodyObject = self.gameObject;
-              directorSpawnRequest.onSpawnedServer = (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 2));
-              DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
-            }
+            DirectorPlacementRule placementRule = new DirectorPlacementRule();
+            placementRule.placementMode = DirectorPlacementRule.PlacementMode.NearestNode;
+            placementRule.minDistance = 3f;
+            placementRule.maxDistance = 40f;
+            placementRule.position = self.characterBody.footPosition;
+            Xoroshiro128Plus rng = RoR2Application.rng;
+            DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixGlassCard, placementRule, rng);
+            directorSpawnRequest.summonerBodyObject = self.gameObject;
+            directorSpawnRequest.onSpawnedServer = (Action<SpawnCard.SpawnResult>)(spawnResult => spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, 2));
+            DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
           }
         }
       }
@@ -898,16 +942,49 @@ namespace UmbralMithrix
 
     private void WeaponSlamFixedUpdate(On.EntityStates.BrotherMonster.WeaponSlam.orig_FixedUpdate orig, EntityStates.BrotherMonster.WeaponSlam self)
     {
-      if (phaseCounter == 1)
+      if (shrineActivated)
       {
-        if ((bool)PhaseCounter.instance)
-          PhaseCounter.instance.phase = 3;
-        orig(self);
-        if ((bool)PhaseCounter.instance)
-          PhaseCounter.instance.phase = 2;
+        if (self.isAuthority)
+        {
+          if (self.hasDoneBlastAttack)
+          {
+            Logger.LogDebug("blast attack done");
+            if (self.modelTransform)
+            {
+              if (hasfired == false)
+              {
+                hasfired = true;
+                Logger.LogDebug("modeltransformed");
+                if (PhaseCounter.instance)
+                {
+                  int orbCount = PhaseCounter.instance.phase == 3 ? ModConfig.SlamOrbProjectileCount.Value / 2 : ModConfig.SlamOrbProjectileCount.Value;
+                  float num = 360f / orbCount;
+                  Vector3 xAxis = Vector3.ProjectOnPlane(self.characterDirection.forward, Vector3.up);
+                  Transform transform2 = self.FindModelChild(WeaponSlam.muzzleString);
+                  Vector3 position = transform2.position;
+                  for (int i = 0; i < orbCount; i++)
+                  {
+                    Vector3 forward = Quaternion.AngleAxis(num * i, Vector3.up) * xAxis;
+                    ProjectileManager.instance.FireProjectile(FistSlam.waveProjectilePrefab, position, Util.QuaternionSafeLookRotation(forward), self.gameObject, self.characterBody.damage * FistSlam.waveProjectileDamageCoefficient, FistSlam.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
+                  }
+
+                  if (PhaseCounter.instance.phase != 1)
+                  {
+                    int lines = 3;
+                    float num2 = WeaponSlam.waveProjectileArc / lines;
+                    for (int index = 0; index < lines; ++index)
+                    {
+                      Vector3 forward = Quaternion.AngleAxis(num2 * ((float)index - (float)WeaponSlam.waveProjectileCount / 2f), Vector3.up) * xAxis;
+                      ProjectileManager.instance.FireProjectile(EntityStates.BrotherHaunt.FireRandomProjectiles.projectilePrefab, position, Util.QuaternionSafeLookRotation(forward), self.gameObject, self.characterBody.damage * EntityStates.BrotherHaunt.FireRandomProjectiles.damageCoefficient, UltChannelState.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master));
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
-      else
-        orig(self);
+      orig(self);
     }
 
     private void FireLunarShardsOnEnter(On.EntityStates.BrotherMonster.Weapon.FireLunarShards.orig_OnEnter orig, FireLunarShards self)
@@ -1017,6 +1094,7 @@ namespace UmbralMithrix
     }
     private void FistSlamFixedUpdate(On.EntityStates.BrotherMonster.FistSlam.orig_FixedUpdate orig, FistSlam self)
     {
+      /**
       if (shrineActivated)
       {
         if ((bool)(UnityEngine.Object)self.modelAnimator && (double)self.modelAnimator.GetFloat("fist.hitBoxActive") > 0.5 && !self.hasAttacked)
@@ -1038,6 +1116,7 @@ namespace UmbralMithrix
           }
         }
       }
+      **/
       orig(self);
     }
 

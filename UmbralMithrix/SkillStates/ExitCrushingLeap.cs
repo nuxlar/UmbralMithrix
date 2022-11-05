@@ -1,5 +1,6 @@
 using EntityStates.BrotherMonster;
 using RoR2;
+using RoR2.Skills;
 using RoR2.Projectile;
 using UnityEngine;
 using EntityStates;
@@ -36,25 +37,24 @@ namespace UmbralMithrix
         return;
       if (PhaseCounter.instance.phase == 1)
         return;
-      if (PhaseCounter.instance.phase == 2)
+      if (PhaseCounter.instance.phase == 2 && this.characterBody.inventory && this.characterBody.inventory.GetItemCount(UmbralMithrix.UmbralItem) == 0)
       {
         DirectorPlacementRule placementRule = new DirectorPlacementRule();
-        placementRule.placementMode = this.isGrounded ? DirectorPlacementRule.PlacementMode.NearestNode : DirectorPlacementRule.PlacementMode.Direct;
+        placementRule.placementMode = DirectorPlacementRule.PlacementMode.NearestNode;
         placementRule.minDistance = 3f;
-        placementRule.maxDistance = 40f;
-        placementRule.spawnOnTarget = this.gameObject.transform;
+        placementRule.maxDistance = 20f;
+        placementRule.position = new Vector3(-88.5f, 491.5f, -0.3f);
         Xoroshiro128Plus rng = RoR2Application.rng;
         DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(MithrixCard, placementRule, rng);
         directorSpawnRequest.summonerBodyObject = this.gameObject;
         directorSpawnRequest.onSpawnedServer += (Action<SpawnCard.SpawnResult>)(spawnResult =>
         {
           spawnResult.spawnedInstance.GetComponent<Inventory>().GiveItem(RoR2Content.Items.HealthDecay, ExitSkyLeap.cloneDuration);
-          spawnResult.spawnedInstance.GetComponent<CharacterMaster>().GetBody().skillLocator.special.skillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(UltEnterState));
+          spawnResult.spawnedInstance.GetComponent<CharacterMaster>().bodyInstanceObject.GetComponent<SkillLocator>().special.skillDef = ScriptableObject.CreateInstance<SkillDef>();
         });
         DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
+        UmbralMithrix.spawnedClone = true;
       }
-      if (PhaseCounter.instance.phase == 2)
-        return;
       GenericSkill genericSkill = (bool)this.skillLocator ? this.skillLocator.special : null;
       if (!(bool)genericSkill)
         return;

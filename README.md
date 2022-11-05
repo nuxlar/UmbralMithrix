@@ -27,8 +27,19 @@ The mod is highly configurable. You can edit config values in-game and during ru
 - Edit Phase 3?
 - Rework Phase 4
 - Tenta anti-cheese without completely removing it
+- Add funny umbral transition
+- SHARED HP
 
 ## Changelog
+
+**1.6.0**
+
+- Fixes Vanilla Mithrix not having vanilla dash
+
+**1.5.1**
+
+- repenting for my transgressions
+- and reverting 1.5.0
 
 **1.5.0**
 
