@@ -24,22 +24,55 @@ The mod is highly configurable. You can edit config values in-game and during ru
 ![mod options](https://i.ibb.co/q9fC9jj/Screenshot-2022-09-12-165657.png)
 
 ## Future Plans
-- Edit Phase 3?
 - Rework Phase 4
 - Tenta anti-cheese without completely removing it
-- Add funny umbral transition
-- SHARED HP
+- "OSP"
+- Fully functional shared HP bar for Phase 3
+- Umbral Chimera fight to replace pillars
 
 ## Changelog
 
 **1.6.0**
 
+- **DELETE YOUR UMBRALMITHRIX CONFIG**
+- Part of the big 2.0 update figured I should release in pieces or it'd take forever
+- Several config changes
 - Fixes Vanilla Mithrix not having vanilla dash
+- Mithrix fires a super shard for every stack of freeze applied
+- Glass clones are only in Phases 1 & 2
+- A glass clone spawns on each player every 8 seconds mithrix sprints
+- Reduces WeaponSlam glass clones from 2 to 1
+- Adds 1.5 seconds to Ult duration for slower pizzas
+- Adds Umbral Evolution
+  - Mithrix seems to be normal but the umbral effect returns while a clone (glass or shadow) is present
+  - By Phase 3 he is consumed by his shadow and becomes Umbral Mithrix, The Collective
+- Phase 1
+  - SprintBash releases a super shard
+  - WeaponSlam releases orbs
+- Phase 2
+  - SprintBash releases a P3 WeaponSlam wave
+  - WeaponSlam releases stationary pizza lines forwards
+  - Crushing Leap spawns Mithrix's shadow to hunt
+  - Pizza is under Mithrix (non-tracking)
+- Phase 3
+  - Clones spawn farther apart
+  - Shared HP bar (BETA) (toggleable - off by default)
+    - Whatever damage taken on 1 clone is replicated on the other
+  - Pizza
+    - Tracking near a random player
+    - Each one has -2 lines
+- Phase 4
+  - Removes extra projectiles
+  - Spawns a tracking pizza on FistSlam
 
 **1.5.1**
 
 - repenting for my transgressions
 - and reverting 1.5.0
+
+<details>
+<summary>1.5.0 and below</summary>
+<br>
 
 **1.5.0**
 
@@ -199,3 +232,4 @@ The mod is highly configurable. You can edit config values in-game and during ru
   - The Shadow has 5x HP (10x if looping)
   - Umbras of all players spawn at the center of the arena
   - The Shadow will start stealing 1 stack of items every 1 seconds after it's shield falls (15 sec max - decreased based on loops)
+</details>

@@ -18,7 +18,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.5.0")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.6.0")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -310,8 +310,8 @@ namespace UmbralMithrix
       CharacterBody MithrixBody = Mithrix.GetComponent<CharacterBody>();
       CharacterDirection MithrixDirection = Mithrix.GetComponent<CharacterDirection>();
 
-      MithrixBody.baseMaxHealth = ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier);
-      MithrixBody.levelMaxHealth = ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier);
+      MithrixBody.baseMaxHealth = ModConfig.enableSharedHP.Value ? ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier) : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 2;
+      MithrixBody.levelMaxHealth = ModConfig.enableSharedHP.Value ? ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier) : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 2;
 
       MithrixBody.baseMoveSpeed = ModConfig.basespeed.Value + (ModConfig.basespeed.Value * mobilityMultiplier);
       MithrixBody.baseAcceleration = ModConfig.acceleration.Value + (ModConfig.acceleration.Value * mobilityMultiplier);
@@ -320,7 +320,7 @@ namespace UmbralMithrix
 
       WeaponSlam.duration = (3.5f / ModConfig.baseattackspeed.Value);
       UltChannelState.waveProjectileCount = ModConfig.UltimateWaves.Value;
-      UltChannelState.maxDuration = ModConfig.UltimateDuration.Value + 2;
+      UltChannelState.maxDuration = ModConfig.UltimateDuration.Value;
     }
 
     private void AdjustPhase4Stats()
@@ -523,8 +523,7 @@ namespace UmbralMithrix
     private void TakeDamage(On.RoR2.HealthComponent.orig_TakeDamage orig, RoR2.HealthComponent self, DamageInfo damageInfo)
     {
       orig(self, damageInfo);
-      /**
-      if (shrineActivated && (bool)PhaseCounter.instance)
+      if (shrineActivated && (bool)PhaseCounter.instance && ModConfig.enableSharedHP.Value)
       {
         if (self.body.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase == 3)
         {
@@ -536,7 +535,7 @@ namespace UmbralMithrix
               mithy.healthComponent.health = self.health;
           }
         }
-      }**/
+      }
     }
 
     // Prevent freezing from affecting Mithrix after 10 stages or if the config is enabled
@@ -656,31 +655,32 @@ namespace UmbralMithrix
       orig(self, body);
       if (shrineActivated)
       {
-        if ((PhaseCounter.instance.phase == 2 || PhaseCounter.instance.phase == 3) && (body.name == "LunarGolemBody(Clone)" || body.name == "LunarExploderBody(Clone)" || body.name == "LunarWispBody(Clone)"))
-          body.healthComponent.Suicide();
-        if (body.name == "BrotherBody(Clone)" && spawnedClone && PhaseCounter.instance.phase == 2)
-          self.inventory.GiveItemString(UmbralItem.name);
-        if (body.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase == 2)
-          spawnedClone = true;
-        // Make Mithrix an Umbra
-        if ((body.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase == 3) || (body.name == "BrotherHurtBody(Clone)" || body.name == "BrotherGlassBody(Clone)"))
-          self.inventory.GiveItemString(UmbralItem.name);
-        if (self.name == "BrotherHurtMaster(Clone)" && !ModConfig.doppelPhase4.Value)
+        if ((bool)PhaseCounter.instance)
         {
-          body.AddBuff(RoR2Content.Buffs.Immune);
-          Task.Delay(3000).ContinueWith(o => { body.RemoveBuff(RoR2Content.Buffs.Immune); });
-        }
-        if (self.name == "BrotherHurtMaster(Clone)" && ModConfig.doppelPhase4.Value)
-        {
-          if (self.inventory.GetItemCount(RoR2Content.Items.ExtraLifeConsumed.itemIndex) == 0)
+          if ((PhaseCounter.instance.phase == 2 || PhaseCounter.instance.phase == 3) && (body.name == "LunarGolemBody(Clone)" || body.name == "LunarExploderBody(Clone)" || body.name == "LunarWispBody(Clone)"))
+            body.healthComponent.Suicide();
+          if (body.name == "BrotherBody(Clone)" && spawnedClone && PhaseCounter.instance.phase == 2)
+            self.inventory.GiveItemString(UmbralItem.name);
+          // Make Mithrix an Umbra
+          if ((body.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase == 3) || (body.name == "BrotherHurtBody(Clone)" || body.name == "BrotherGlassBody(Clone)"))
+            self.inventory.GiveItemString(UmbralItem.name);
+          if (self.name == "BrotherHurtMaster(Clone)" && !ModConfig.doppelPhase4.Value)
+          {
             body.AddBuff(RoR2Content.Buffs.Immune);
-          if (!doppelEventHasTriggered)
-            RoR2.Artifacts.DoppelgangerInvasionManager.PerformInvasion(RoR2Application.rng);
-          doppelEventHasTriggered = true;
-          if (Run.instance.loopClearCount != 0)
-            Task.Delay(20000 / Run.instance.loopClearCount).ContinueWith(o => { body.RemoveBuff(RoR2Content.Buffs.Immune); });
-          else
-            Task.Delay(20000).ContinueWith(o => { body.RemoveBuff(RoR2Content.Buffs.Immune); });
+            Task.Delay(3000).ContinueWith(o => { body.RemoveBuff(RoR2Content.Buffs.Immune); });
+          }
+          if (self.name == "BrotherHurtMaster(Clone)" && ModConfig.doppelPhase4.Value)
+          {
+            if (self.inventory.GetItemCount(RoR2Content.Items.ExtraLifeConsumed.itemIndex) == 0)
+              body.AddBuff(RoR2Content.Buffs.Immune);
+            if (!doppelEventHasTriggered)
+              RoR2.Artifacts.DoppelgangerInvasionManager.PerformInvasion(RoR2Application.rng);
+            doppelEventHasTriggered = true;
+            if (Run.instance.loopClearCount != 0)
+              Task.Delay(20000 / Run.instance.loopClearCount).ContinueWith(o => { body.RemoveBuff(RoR2Content.Buffs.Immune); });
+            else
+              Task.Delay(20000).ContinueWith(o => { body.RemoveBuff(RoR2Content.Buffs.Immune); });
+          }
         }
       }
     }
@@ -710,29 +710,30 @@ namespace UmbralMithrix
           // prevents pizza at Mithrix instead only following each player
           if (PhaseCounter.instance)
           {
-            UltChannelState.waveProjectileCount = 0;
-            int playerCount = PlayerCharacterMasterController.instances.Count;
-            int pizzaLines = ModConfig.UltimateWaves.Value;
             if (PhaseCounter.instance.phase == 3)
-              pizzaLines = ModConfig.UltimateWaves.Value - 2;
-
-            // dividing lines by player count so multiplayer doesn't have unavoidable pizza
-            float num = 360f / pizzaLines;
-            Vector3 normalized = Vector3.ProjectOnPlane(UnityEngine.Random.onUnitSphere, Vector3.up).normalized;
-            GameObject prefab = UltChannelState.waveProjectileLeftPrefab;
-            if ((double)UnityEngine.Random.value <= 0.5)
-              prefab = UltChannelState.waveProjectileRightPrefab;
-
-            // get random idx to grab a random player
-            System.Random r = new System.Random();
-            int rIdx = r.Next(0, playerCount - 1);
-            PlayerCharacterMasterController player = PlayerCharacterMasterController.instances[rIdx];
-
-            Vector3 position = new Vector3(player.body.footPosition.x, self.characterBody.footPosition.y, player.body.footPosition.z) + new Vector3(UnityEngine.Random.Range(-50f, 50f), 0.0f, UnityEngine.Random.Range(-50f, 50f));
-            for (int index = 0; index < pizzaLines; ++index)
             {
-              Vector3 forward = Quaternion.AngleAxis(num * (float)index, Vector3.up) * normalized;
-              ProjectileManager.instance.FireProjectile(prefab, position, Util.QuaternionSafeLookRotation(forward), self.gameObject, self.characterBody.damage * UltChannelState.waveProjectileDamageCoefficient, UltChannelState.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master));
+              UltChannelState.waveProjectileCount = 0;
+              int playerCount = PlayerCharacterMasterController.instances.Count;
+              int pizzaLines = ModConfig.UltimateWaves.Value - 2;
+
+              // dividing lines by player count so multiplayer doesn't have unavoidable pizza
+              float num = 360f / pizzaLines;
+              Vector3 normalized = Vector3.ProjectOnPlane(UnityEngine.Random.onUnitSphere, Vector3.up).normalized;
+              GameObject prefab = UltChannelState.waveProjectileLeftPrefab;
+              if ((double)UnityEngine.Random.value <= 0.5)
+                prefab = UltChannelState.waveProjectileRightPrefab;
+
+              // get random idx to grab a random player
+              System.Random r = new System.Random();
+              int rIdx = r.Next(0, playerCount - 1);
+              PlayerCharacterMasterController player = PlayerCharacterMasterController.instances[rIdx];
+
+              Vector3 position = new Vector3(player.body.footPosition.x, self.characterBody.footPosition.y, player.body.footPosition.z) + new Vector3(UnityEngine.Random.Range(-50f, 50f), 0.0f, UnityEngine.Random.Range(-50f, 50f));
+              for (int index = 0; index < pizzaLines; ++index)
+              {
+                Vector3 forward = Quaternion.AngleAxis(num * (float)index, Vector3.up) * normalized;
+                ProjectileManager.instance.FireProjectile(prefab, position, Util.QuaternionSafeLookRotation(forward), self.gameObject, self.characterBody.damage * UltChannelState.waveProjectileDamageCoefficient, UltChannelState.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master));
+              }
             }
           }
         }
@@ -798,15 +799,24 @@ namespace UmbralMithrix
         }
         if (phaseCounter == 2)
         {
-          Mithrix.transform.position = new Vector3(-88.5f, 491.5f, -0.3f);
+          GameObject emptyGO = new GameObject();
+          emptyGO.transform.position = new Vector3(-88.5f, 491.5f, -0.3f);
+          emptyGO.transform.rotation = Quaternion.identity;
+          Mithrix.transform.position = new Vector3(-108.5f, 491.5f, -0.3f);
           Mithrix.transform.rotation = Quaternion.identity;
-          Transform explicitSpawnPosition = Mithrix.transform;
-          ScriptedCombatEncounter.SpawnInfo spawnInfoMithrix = new ScriptedCombatEncounter.SpawnInfo
+          Transform explicitSpawnPosition1 = Mithrix.transform;
+          Transform explicitSpawnPosition2 = emptyGO.transform;
+          ScriptedCombatEncounter.SpawnInfo spawnInfoMithrix1 = new ScriptedCombatEncounter.SpawnInfo
           {
-            explicitSpawnPosition = explicitSpawnPosition,
+            explicitSpawnPosition = explicitSpawnPosition1,
             spawnCard = MithrixCard,
           };
-          self.phaseScriptedCombatEncounter.spawns = new ScriptedCombatEncounter.SpawnInfo[] { spawnInfoMithrix, spawnInfoMithrix };
+          ScriptedCombatEncounter.SpawnInfo spawnInfoMithrix2 = new ScriptedCombatEncounter.SpawnInfo
+          {
+            explicitSpawnPosition = explicitSpawnPosition2,
+            spawnCard = MithrixCard,
+          };
+          self.phaseScriptedCombatEncounter.spawns = new ScriptedCombatEncounter.SpawnInfo[] { spawnInfoMithrix1, spawnInfoMithrix2 };
         }
         self.phaseScriptedCombatEncounter.combatSquad.onMemberAddedServer += new Action<CharacterMaster>(self.OnMemberAddedServer);
       }
