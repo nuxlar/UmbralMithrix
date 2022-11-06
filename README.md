@@ -6,9 +6,9 @@ Blacklisted Items (from mithy and doppels): Tesla, Nkuhanas, Empathy, Drone Part
 
 Phase info:
 
-- Phase 1 Mithrix now jumps on you for a Crushing Leap, get in the air. Bash and Slam spawn a deteriorating glass clone with full damage and a trick up their sleeve (2 for slam).
-- Phase 2 (skippable) The shadows hammer is imbued with power and uses a devastating flame line attack. 2 glass clones split off from the shadow after Crushing Leap (Off by default).
-- Phase 3 The shadow splits into 2 (50% HP Each for 1-2 players) halving the firepower of its abilities.
+- Phase 1 Mithrix now jumps on you for a Crushing Leap, get in the air. Bash, Slam, and Sprint spawn a Glass Clone on each survivor.
+- Phase 2 (skippable) A clone splits off from the shadow and harnesses the hammer's power.
+- Phase 3 The shadow splits into 2 (50% HP Each for 1-2 players).
 - Phase 4 The shadow becomes invulnerable and summons shadows of his enemies, survive until the shadow's shield falls, it'll slowly start stealing items destroy him quickly (toggleable).
 
 ## How to Activate
@@ -23,7 +23,88 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ![mod options](https://i.ibb.co/q9fC9jj/Screenshot-2022-09-12-165657.png)
 
+## Future Plans
+- Rework Phase 4
+- Tenta anti-cheese without completely removing it
+- "OSP"
+- Fully functional shared HP bar for Phase 3
+- Umbral Chimera fight to replace pillars
+
 ## Changelog
+
+**1.6.0**
+
+- **DELETE YOUR UMBRALMITHRIX CONFIG**
+- Part of the big 2.0 update figured I should release in pieces or it'd take forever
+- Several config changes
+- Fixes Vanilla Mithrix not having vanilla dash
+- Mithrix fires a super shard for every stack of freeze applied
+- Glass clones are only in Phases 1 & 2
+- A glass clone spawns on each player every 8 seconds mithrix sprints
+- Reduces WeaponSlam glass clones from 2 to 1
+- Adds 1.5 seconds to Ult duration for slower pizzas
+- Adds Umbral Evolution
+  - Mithrix seems to be normal but the umbral effect returns while a clone (glass or shadow) is present
+  - By Phase 3 he is consumed by his shadow and becomes Umbral Mithrix, The Collective
+- Phase 1
+  - SprintBash releases a super shard
+  - WeaponSlam releases orbs
+- Phase 2
+  - SprintBash releases a P3 WeaponSlam wave
+  - WeaponSlam releases stationary pizza lines forwards
+  - Crushing Leap spawns Mithrix's shadow to hunt
+  - Pizza is under Mithrix (non-tracking)
+- Phase 3
+  - Clones spawn farther apart
+  - Shared HP bar (BETA) (toggleable - off by default)
+    - Whatever damage taken on 1 clone is replicated on the other
+  - Pizza
+    - Tracking near a random player
+    - Each one has -2 lines
+- Phase 4
+  - Removes extra projectiles
+  - Spawns a tracking pizza on FistSlam
+
+**1.5.1**
+
+- repenting for my transgressions
+- and reverting 1.5.0
+
+<details>
+<summary>1.5.0 and below</summary>
+<br>
+
+**1.5.0**
+
+- **DELETE YOUR UMBRALMITHRIX CONFIG**
+- Glass clones are only in Phases 1 & 2
+- Glass clones spawn near each player(s) instead of near mithrix
+- A glass clone is triggered every 8 seconds mithrix sprints
+- Reduces WeaponSlam glass clones from 2 to 1
+- Adds a super shard fire when frozen
+- Phase 2 Changes
+  - No more Lunar Devastation not even as a config
+  - After Crushing Leap a clone spawns and does the Pizza
+  - Pizza spawns a half wheel in a range near each player
+- Phase 3 Changes
+  - Pizza spawns a quarter wheel in a range near each player
+- Phase 4 Changes
+  - Half Pizza spawns near you on FistSlam
+- Config Changes
+  - Increases Pizza lines (2)
+  - Increases Crushing Leap air time (0.5s)
+  - Increases Base HP (100)
+  - Increases Level Damage (0.25)
+  - Increases Move Speed (1)
+  - Increases Turn Speed (190)
+  - Increases Acceleration (200)
+  - Increases CD
+    - WeaponSlam (1s)
+    - SprintBash (0.5s)
+    - Dash (0.5s)
+  - Adds Loop Scaling (First "Loop" is still 0)
+  - Adds Player Scaling
+
 
 **1.4.4**
 
@@ -151,3 +232,4 @@ The mod is highly configurable. You can edit config values in-game and during ru
   - The Shadow has 5x HP (10x if looping)
   - Umbras of all players spawn at the center of the arena
   - The Shadow will start stealing 1 stack of items every 1 seconds after it's shield falls (15 sec max - decreased based on loops)
+</details>
