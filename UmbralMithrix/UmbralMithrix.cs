@@ -18,7 +18,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.6.0")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.6.1")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -170,6 +170,7 @@ namespace UmbralMithrix
       SkillFamily Ult = SklLocate.special.skillFamily;
       SkillDef UltChange = Ult.variants[0].skillDef;
       UltChange.baseRechargeInterval = 30;
+      UltChange.activationState = new EntityStates.SerializableEntityStateType(typeof(EnterSkyLeap));
     }
 
     private void AdjustBaseStats()
@@ -728,7 +729,7 @@ namespace UmbralMithrix
               int rIdx = r.Next(0, playerCount - 1);
               PlayerCharacterMasterController player = PlayerCharacterMasterController.instances[rIdx];
 
-              Vector3 position = new Vector3(player.body.footPosition.x, self.characterBody.footPosition.y, player.body.footPosition.z) + new Vector3(UnityEngine.Random.Range(-50f, 50f), 0.0f, UnityEngine.Random.Range(-50f, 50f));
+              Vector3 position = new Vector3(player.body.footPosition.x, self.characterBody.footPosition.y, player.body.footPosition.z) + new Vector3(UnityEngine.Random.Range(-75f, 75f), 0.0f, UnityEngine.Random.Range(-75f, 75f));
               for (int index = 0; index < pizzaLines; ++index)
               {
                 Vector3 forward = Quaternion.AngleAxis(num * (float)index, Vector3.up) * normalized;
@@ -893,7 +894,7 @@ namespace UmbralMithrix
           {
             if (self.characterBody.name == "BrotherBody(Clone)")
             {
-              if (PhaseCounter.instance.phase != 1)
+              if (PhaseCounter.instance.phase != 1 && self.characterBody.inventory.GetItemCount(UmbralItem) == 0)
               {
                 Vector3 vector3 = Vector3.ProjectOnPlane(self.inputBank.aimDirection, Vector3.up);
                 Vector3 footPosition = self.characterBody.footPosition;
@@ -967,7 +968,7 @@ namespace UmbralMithrix
                 Logger.LogDebug("modeltransformed");
                 if (PhaseCounter.instance)
                 {
-                  int orbCount = PhaseCounter.instance.phase == 3 ? ModConfig.SlamOrbProjectileCount.Value / 2 : ModConfig.SlamOrbProjectileCount.Value;
+                  int orbCount = (spawnedClone || PhaseCounter.instance.phase == 3) ? ModConfig.SlamOrbProjectileCount.Value / 2 : ModConfig.SlamOrbProjectileCount.Value;
                   float num = 360f / orbCount;
                   Vector3 xAxis = Vector3.ProjectOnPlane(self.characterDirection.forward, Vector3.up);
                   Transform transform2 = self.FindModelChild(WeaponSlam.muzzleString);
@@ -976,17 +977,6 @@ namespace UmbralMithrix
                   {
                     Vector3 forward = Quaternion.AngleAxis(num * i, Vector3.up) * xAxis;
                     ProjectileManager.instance.FireProjectile(FistSlam.waveProjectilePrefab, position, Util.QuaternionSafeLookRotation(forward), self.gameObject, self.characterBody.damage * FistSlam.waveProjectileDamageCoefficient, FistSlam.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master), DamageColorIndex.Default, null, -1f);
-                  }
-
-                  if (PhaseCounter.instance.phase != 1)
-                  {
-                    int lines = 3;
-                    float num2 = WeaponSlam.waveProjectileArc / lines;
-                    for (int index = 0; index < lines; ++index)
-                    {
-                      Vector3 forward = Quaternion.AngleAxis(num2 * ((float)index - (float)WeaponSlam.waveProjectileCount / 2f), Vector3.up) * xAxis;
-                      ProjectileManager.instance.FireProjectile(EntityStates.BrotherHaunt.FireRandomProjectiles.projectilePrefab, position, Util.QuaternionSafeLookRotation(forward), self.gameObject, self.characterBody.damage * EntityStates.BrotherHaunt.FireRandomProjectiles.damageCoefficient, UltChannelState.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master));
-                    }
                   }
                 }
               }

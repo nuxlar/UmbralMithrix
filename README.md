@@ -32,6 +32,14 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ## Changelog
 
+**1.6.1**
+
+- Fixes vanilla mithrix not being vanilla after activating umbral on a previous run
+- Removed pizza lines from WeaponSlam
+- Removed shockwave on SprintBash from clones (P2 Umbra and Phase 3 Umbras)
+- Halves WeaponSlam orbs in P2 when clone spawns
+- Extends tracking pizza's random range by 25
+
 **1.6.0**
 
 - **DELETE YOUR UMBRALMITHRIX CONFIG**
