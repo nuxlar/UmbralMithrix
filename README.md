@@ -33,6 +33,10 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ## Changelog
 
+**1.6.6**
+
+- bugfix
+
 **1.6.5**
 
 - Adds an alt Phase 4 for funsies

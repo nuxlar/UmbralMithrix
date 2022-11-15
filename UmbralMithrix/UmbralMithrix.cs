@@ -18,7 +18,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.6.5")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.6.6")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -39,6 +39,7 @@ namespace UmbralMithrix
     HashSet<ItemIndex> doppelBlacklist = new();
     public static ItemDef UmbralItem;
     IEnumerable<CharacterBody> mithies = null;
+    GameObject MagmaWorm = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/MagmaWorm/MagmaWormBody.prefab").WaitForCompletion();
     GameObject Mithrix = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherBody.prefab").WaitForCompletion();
     GameObject Obelisk = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/mysteryspace/MSObelisk.prefab").WaitForCompletion();
     GameObject MithrixHurt = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherHurtBody.prefab").WaitForCompletion();
@@ -98,6 +99,7 @@ namespace UmbralMithrix
     private void RevertToVanillaStats()
     {
       CharacterBody MithrixBody = Mithrix.GetComponent<CharacterBody>();
+      CharacterBody MagmaWormBody = MagmaWorm.GetComponent<CharacterBody>();
       CharacterBody MithrixHurtBody = MithrixHurt.GetComponent<CharacterBody>();
       CharacterDirection MithrixDirection = Mithrix.GetComponent<CharacterDirection>();
       CharacterMotor MithrixMotor = Mithrix.GetComponent<CharacterMotor>();
@@ -139,12 +141,16 @@ namespace UmbralMithrix
       UltChannelState.waveProjectileCount = 8;
       UltChannelState.maxDuration = 8;
       UltChannelState.totalWaves = 4;
+
+      MagmaWormBody.baseMaxHealth = 2400;
+      MagmaWormBody.levelMaxHealth = 720;
     }
 
     private void RevertToVanillaSkills()
     {
       SkillLocator SklLocate = Mithrix.GetComponent<SkillLocator>();
       SkillLocator skillLocator = MithrixHurt.GetComponent<SkillLocator>();
+      SkillLocator MagmaWormSkillLocator = MagmaWorm.GetComponent<SkillLocator>();
       // MithrixHurt
       SkillFamily fireLunarShardsHurt = skillLocator.primary.skillFamily;
       SkillDef fireLunarShardsHurtSkillDef = fireLunarShardsHurt.variants[0].skillDef;
@@ -170,6 +176,9 @@ namespace UmbralMithrix
       SkillDef UltChange = Ult.variants[0].skillDef;
       UltChange.baseRechargeInterval = 30;
       UltChange.activationState = new EntityStates.SerializableEntityStateType(typeof(EnterSkyLeap));
+
+      MagmaWormSkillLocator.special.skillDef.baseRechargeInterval = 30f;
+      MagmaWormSkillLocator.special.skillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(EntityStates.MagmaWorm.SwitchStance));
     }
 
     private void AdjustBaseStats()
