@@ -9,7 +9,7 @@ Phase info:
 - Phase 1 Mithrix now jumps on you for a Crushing Leap, get in the air. Bash, Slam, and Sprint spawn a Glass Clone on each survivor.
 - Phase 2 (skippable) A clone splits off from the shadow and harnesses the hammer's power.
 - Phase 3 The shadow splits into 2 (50% HP Each for 1-2 players).
-- Phase 4 The shadow becomes invulnerable and summons shadows of his enemies, survive until the shadow's shield falls, it'll slowly start stealing items destroy him quickly (toggleable).
+- Phase 4 Surprise.
 
 ## How to Activate
 
@@ -24,13 +24,20 @@ The mod is highly configurable. You can edit config values in-game and during ru
 ![mod options](https://i.ibb.co/q9fC9jj/Screenshot-2022-09-12-165657.png)
 
 ## Future Plans
-- Rework Phase 4
+- Rework Phase 4?
+- Add some more to the current alt Phase 4
 - Tenta anti-cheese without completely removing it
 - "OSP"
 - Fully functional shared HP bar for Phase 3
 - Umbral Chimera fight to replace pillars
 
 ## Changelog
+
+**1.6.5**
+
+- Adds an alt Phase 4 for funsies
+- Removes the old doppelganger phase 4
+- The config is on by default, turn it off for the "Vanilla" item stealing Phase 4
 
 **1.6.1**
 
