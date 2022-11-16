@@ -18,7 +18,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.6.6")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.7.0")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -40,6 +40,7 @@ namespace UmbralMithrix
     public static ItemDef UmbralItem;
     IEnumerable<CharacterBody> mithies = null;
     GameObject MagmaWorm = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/MagmaWorm/MagmaWormBody.prefab").WaitForCompletion();
+    GameObject ElectricWorm = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ElectricWorm/ElectricWormBody.prefab").WaitForCompletion();
     GameObject Mithrix = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherBody.prefab").WaitForCompletion();
     GameObject Obelisk = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/mysteryspace/MSObelisk.prefab").WaitForCompletion();
     GameObject MithrixHurt = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherHurtBody.prefab").WaitForCompletion();
@@ -53,11 +54,10 @@ namespace UmbralMithrix
     GameObject Exploder = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarExploder/LunarExploderBody.prefab").WaitForCompletion();
     GameObject LunarGolem = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarGolem/LunarGolemBody.prefab").WaitForCompletion();
     GameObject LunarWisp = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarWisp/LunarWispBody.prefab").WaitForCompletion();
-    // static SkillDef wurmLazer = ScriptableObject.CreateInstance<SkillDef>();
-    // static SkillDef wurmOrbs = ScriptableObject.CreateInstance<SkillDef>();
-
     static GameObject exploderProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarExploder/LunarExploderShardProjectile.prefab").WaitForCompletion();
     static GameObject golemProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarGolem/LunarGolemTwinShotProjectile.prefab").WaitForCompletion();
+    static SkillDef magmaWormBlink = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/MagmaWorm/MagmaWormBodyBlink.asset").WaitForCompletion();
+    static SkillDef electricWormBlink = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/ElectricWorm/ElectricWormBodyBlink.asset").WaitForCompletion();
 
     public void Awake()
     {
@@ -151,6 +151,7 @@ namespace UmbralMithrix
       SkillLocator SklLocate = Mithrix.GetComponent<SkillLocator>();
       SkillLocator skillLocator = MithrixHurt.GetComponent<SkillLocator>();
       SkillLocator MagmaWormSkillLocator = MagmaWorm.GetComponent<SkillLocator>();
+      SkillLocator ElectricWormSkillLocator = ElectricWorm.GetComponent<SkillLocator>();
       // MithrixHurt
       SkillFamily fireLunarShardsHurt = skillLocator.primary.skillFamily;
       SkillDef fireLunarShardsHurtSkillDef = fireLunarShardsHurt.variants[0].skillDef;
@@ -177,8 +178,19 @@ namespace UmbralMithrix
       UltChange.baseRechargeInterval = 30;
       UltChange.activationState = new EntityStates.SerializableEntityStateType(typeof(EnterSkyLeap));
 
-      MagmaWormSkillLocator.special.skillFamily.variants[0].skillDef.baseRechargeInterval = 30f;
-      MagmaWormSkillLocator.special.skillFamily.variants[0].skillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(EntityStates.MagmaWorm.SwitchStance));
+      MagmaWormSkillLocator.utility.skillFamily.variants[0].skillDef = magmaWormBlink;
+      SkillDef magmaWormBlinkDef = MagmaWormSkillLocator.utility.skillFamily.variants[0].skillDef;
+      magmaWormBlinkDef.activationState = new EntityStates.SerializableEntityStateType(typeof(EntityStates.MagmaWorm.BlinkState));
+      magmaWormBlinkDef.baseRechargeInterval = 10f;
+      magmaWormBlinkDef.beginSkillCooldownOnSkillEnd = false;
+      magmaWormBlinkDef.interruptPriority = EntityStates.InterruptPriority.Skill;
+      ElectricWormSkillLocator.utility.skillFamily.variants[0].skillDef = electricWormBlink;
+
+      SkillDef electricWormBlinkDef = ElectricWormSkillLocator.utility.skillFamily.variants[0].skillDef;
+      electricWormBlinkDef.activationState = new EntityStates.SerializableEntityStateType(typeof(EntityStates.MagmaWorm.BlinkState));
+      electricWormBlinkDef.baseRechargeInterval = 10f;
+      electricWormBlinkDef.beginSkillCooldownOnSkillEnd = false;
+      electricWormBlinkDef.interruptPriority = EntityStates.InterruptPriority.Skill;
     }
 
     private void AdjustBaseStats()
@@ -383,6 +395,7 @@ namespace UmbralMithrix
       ContentAddition.AddEntityState<AimCrushingLeap>(out _);
       ContentAddition.AddEntityState<ExitCrushingLeap>(out _);
       ContentAddition.AddEntityState<FireWurmLaser>(out _);
+      ContentAddition.AddEntityState<FireWurmOrbs>(out _);
     }
     private void CreateDoppelItem()
     {
@@ -626,17 +639,34 @@ namespace UmbralMithrix
             self.inventory.GiveItemString(UmbralItem.name);
             body.baseNameToken = "Wurms";
             body.subtitleNameToken = "Tendrils Of";
+
             if (body.name == "MagmaWormBody(Clone)")
             {
-              body.skillLocator.special.skillDef.baseRechargeInterval = 10f;
-              body.skillLocator.special.skillDef.interruptPriority = EntityStates.InterruptPriority.Death;
               CharacterBody electricWurm = Resources.FindObjectsOfTypeAll<CharacterBody>().Where(obj => obj.name == "ElectricWormBody(Clone)").First();
               if ((bool)electricWurm)
               {
                 body.baseMaxHealth = electricWurm.baseMaxHealth;
                 body.levelMaxHealth = electricWurm.levelMaxHealth;
               }
-              Task.Delay(3000).ContinueWith((x) => { body.skillLocator.special.skillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(FireWurmLaser)); });
+              Task.Delay(1000).ContinueWith((x) =>
+              {
+                SkillDef magmaWormBlinkDef = body.skillLocator.utility.skillFamily.variants[0].skillDef;
+                magmaWormBlinkDef.activationState = new EntityStates.SerializableEntityStateType(typeof(FireWurmLaser));
+                magmaWormBlinkDef.baseRechargeInterval = (float)ModConfig.WurmLaserCD.Value;
+                magmaWormBlinkDef.beginSkillCooldownOnSkillEnd = true;
+                magmaWormBlinkDef.interruptPriority = EntityStates.InterruptPriority.Death;
+              });
+            }
+            if (body.name == "ElectricWormBody(Clone)")
+            {
+              Task.Delay(1000).ContinueWith((x) =>
+              {
+                SkillDef electricWormBlinkDef = body.skillLocator.utility.skillFamily.variants[0].skillDef;
+                electricWormBlinkDef.activationState = new EntityStates.SerializableEntityStateType(typeof(FireWurmOrbs));
+                electricWormBlinkDef.baseRechargeInterval = (float)ModConfig.WurmOrbCD.Value;
+                electricWormBlinkDef.beginSkillCooldownOnSkillEnd = true;
+                electricWormBlinkDef.interruptPriority = EntityStates.InterruptPriority.Death;
+              });
             }
           }
           if ((PhaseCounter.instance.phase == 2 || PhaseCounter.instance.phase == 3) && (body.name == "LunarGolemBody(Clone)" || body.name == "LunarExploderBody(Clone)" || body.name == "LunarWispBody(Clone)"))

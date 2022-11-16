@@ -1,6 +1,6 @@
 # Umbral Mithrix
 
-Accursed Mithrix **reworked** variant with clones and new Phase 4 (For more info on the base mod https://thunderstore.io/package/Nuxlar/MithrixTheAccursed/).
+Accursed Mithrix **reworked** variant with clones and new Phase 4 (For more info on the [base mod](https://thunderstore.io/package/Nuxlar/MithrixTheAccursed/)).
 
 Blacklisted Items (from mithy and doppels): Tesla, Nkuhanas, Empathy, Drone Parts, Razorwire
 
@@ -9,7 +9,7 @@ Phase info:
 - Phase 1 Mithrix now jumps on you for a Crushing Leap, get in the air. Bash, Slam, and Sprint spawn a Glass Clone on each survivor.
 - Phase 2 (skippable) A clone splits off from the shadow and harnesses the hammer's power.
 - Phase 3 The shadow splits into 2 (50% HP Each for 1-2 players).
-- Phase 4 Surprise.
+- Phase 4 Two Umbral Wurms spawn, each with their own devastating attack.
 
 ## How to Activate
 
@@ -24,14 +24,29 @@ The mod is highly configurable. You can edit config values in-game and during ru
 ![mod options](https://i.ibb.co/q9fC9jj/Screenshot-2022-09-12-165657.png)
 
 ## Future Plans
-- Rework Phase 4?
-- Add some more to the current alt Phase 4
+- Rework ItemSteal Phase 4
 - Tenta anti-cheese without completely removing it
 - "OSP"
 - Fully functional shared HP bar for Phase 3
 - Umbral Chimera fight to replace pillars
 
 ## Changelog
+
+**1.7.0**
+
+- Phase 4 Wurms!
+- LaserWurm
+  - Fires a devastating laser
+  - Launches magma balls
+  - Base CD of 24 secs (configurable)
+- OrbWurm
+  - Fires an orb wave attack (6 orbs) (configurable)
+  - Launches lightening balls
+  - Base CD of 12 secs (configurable)
+
+<details>
+<summary>1.6.7 and below</summary>
+<br>
 
 **1.6.7**
 
@@ -92,10 +107,6 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 - repenting for my transgressions
 - and reverting 1.5.0
-
-<details>
-<summary>1.5.0 and below</summary>
-<br>
 
 **1.5.0**
 

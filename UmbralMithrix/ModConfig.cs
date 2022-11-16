@@ -63,6 +63,10 @@ namespace UmbralMithrix
     public static ConfigEntry<float> CrushingLeap;
     public static ConfigEntry<int> SuperShardCount;
     public static ConfigEntry<float> SuperShardCD;
+    public static ConfigEntry<int> WurmOrbs;
+    public static ConfigEntry<float> WurmLaserCD;
+    public static ConfigEntry<float> WurmOrbCD;
+
 
     public static ConfigEntry<int> SlamOrbProjectileCount;
     public static ConfigEntry<int> SlamProjectileCount;
@@ -83,7 +87,7 @@ namespace UmbralMithrix
 
     public static void InitConfig(ConfigFile config)
     {
-      doppelPhase4 = config.Bind("General", "Phase 4 Alt Fight", true, "Toggle the alternate Phase 4 fight");
+      doppelPhase4 = config.Bind("General", "Phase 4 Wurm Fight", true, "Toggle the alternate Phase 4 fight");
       enableSharedHP = config.Bind("General", "Toggle Shared HP", false, "Toggle if Phase 3 should have the BETA shared HP bar");
       phase2Skip = config.Bind("General", "Phase 2 Skip", false, "Skip The Reworked Phase 2 for a more casual fight");
       debuffResistance = config.Bind("General", "Freeze/Nullify Immune", false, "Toggle the debuff resistance for loop 1, will not turn off for loops 2 and up");
@@ -139,6 +143,9 @@ namespace UmbralMithrix
       CrushingLeap = config.Bind("New Skills", "Crushing Leap", 2f, "How long Mithrix stays in the air during the crushing leap. Vanilla: N/A");
       SuperShardCount = config.Bind("New Skills", "Super Shard Stocks", 3, "How many super shards Mithrix can fire before CD. Vanilla: N/A");
       SuperShardCD = config.Bind("New Skills", "Super Shard CD", 4f, "How long it takes for Mithrix to fire super shards again. Vanilla: N/A");
+      WurmOrbs = config.Bind("New Skills", "Wurm Orbs", 6, "How many orbs are fired per wave by the Umbral Wurm. Vanilla: N/A");
+      WurmLaserCD = config.Bind("New Skills", "Wurm Laser CD", 24f, "Cooldown for the Umbral Wurm's Laser attack. Vanilla: N/A");
+      WurmOrbCD = config.Bind("New Skills", "Wurm Orb CD", 12f, "Cooldown for the Umbral Wurm's Orb attack. Vanilla: N/A");
 
       SlamOrbProjectileCount = config.Bind("Skill Mods", "Orb Projectile Count", 6, "Orbs fired by weapon slam in a circle. Vanilla: N/A");
       LunarShardAdd = config.Bind("Skill Mods", "Shard Add Count", 2, "Bonus shards added to each shot of lunar shards. Vanilla: N/A");
@@ -208,6 +215,9 @@ namespace UmbralMithrix
       ModSettingsManager.AddOption(new StepSliderOption(CrushingLeap, new StepSliderConfig() { min = 0.1f, max = 6, increment = 0.1f }));
       ModSettingsManager.AddOption(new IntSliderOption(SuperShardCount, new IntSliderConfig() { min = 1, max = 12 }));
       ModSettingsManager.AddOption(new StepSliderOption(SuperShardCD, new StepSliderConfig() { min = 1, max = 5, increment = 0.25f }));
+      ModSettingsManager.AddOption(new IntSliderOption(WurmOrbs, new IntSliderConfig() { min = 1, max = 12 }));
+      ModSettingsManager.AddOption(new StepSliderOption(WurmLaserCD, new StepSliderConfig() { min = 1, max = 30, increment = 1 }));
+      ModSettingsManager.AddOption(new StepSliderOption(WurmOrbCD, new StepSliderConfig() { min = 1, max = 30, increment = 1 }));
       // Skill Mods
       ModSettingsManager.AddOption(new IntSliderOption(SlamOrbProjectileCount, new IntSliderConfig() { min = 0, max = 16 }));
       ModSettingsManager.AddOption(new IntSliderOption(LunarShardAdd, new IntSliderConfig() { min = 1, max = 5 }));
