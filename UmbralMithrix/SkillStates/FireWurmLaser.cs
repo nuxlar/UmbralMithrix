@@ -11,7 +11,7 @@ namespace UmbralMithrix
   {
     public static AnimationCurve revolutionsCurve;
     public static GameObject beamVfxPrefab;
-    public static float beamRadius = 2f;
+    public static float beamRadius = 16f;
     public static float beamMaxDistance = 200f;
     public static float beamDpsCoefficient = 1f;
     public static float beamTickFrequency = 4f;

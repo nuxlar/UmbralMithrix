@@ -32,6 +32,10 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ## Changelog
 
+**1.7.1**
+
+- Fixes Wurm Laser radius
+
 **1.7.0**
 
 - Phase 4 Wurms!
