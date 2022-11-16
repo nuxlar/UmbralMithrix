@@ -177,8 +177,8 @@ namespace UmbralMithrix
       UltChange.baseRechargeInterval = 30;
       UltChange.activationState = new EntityStates.SerializableEntityStateType(typeof(EnterSkyLeap));
 
-      MagmaWormSkillLocator.special.skillDef.baseRechargeInterval = 30f;
-      MagmaWormSkillLocator.special.skillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(EntityStates.MagmaWorm.SwitchStance));
+      MagmaWormSkillLocator.special.skillFamily.variants[0].skillDef.baseRechargeInterval = 30f;
+      MagmaWormSkillLocator.special.skillFamily.variants[0].skillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(EntityStates.MagmaWorm.SwitchStance));
     }
 
     private void AdjustBaseStats()

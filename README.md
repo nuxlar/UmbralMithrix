@@ -33,6 +33,10 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ## Changelog
 
+**1.6.7**
+
+- bugfix electric bugaloo
+
 **1.6.6**
 
 - bugfix
