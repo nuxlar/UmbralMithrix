@@ -32,6 +32,22 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ## Changelog
 
+**1.8.0**
+
+- Makes wurms thicc and longer?
+- Reworks ItemSteal Phase 4
+  - Survive
+  - Mithrix is immune with his HP dwindling (3 min)
+  - Random full pizzas spawning
+  - Every minute he gains an attack and a piece of the arena disappears
+  - 0 min Lasers (Titan, Xi, Voidling, Ball) lightening chains sun
+  - 1 min 
+  - 2 min Adds WurmOrbs attack
+
+<details>
+<summary>1.7.1 and below</summary>
+<br>
+
 **1.7.1**
 
 - Fixes Wurm Laser radius
@@ -47,10 +63,6 @@ The mod is highly configurable. You can edit config values in-game and during ru
   - Fires an orb wave attack (6 orbs) (configurable)
   - Launches lightening balls
   - Base CD of 12 secs (configurable)
-
-<details>
-<summary>1.6.7 and below</summary>
-<br>
 
 **1.6.7**
 
