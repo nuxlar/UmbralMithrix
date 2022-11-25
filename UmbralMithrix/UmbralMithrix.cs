@@ -33,15 +33,16 @@ namespace UmbralMithrix
     bool hasfired;
     public int phaseCounter = 0;
     float elapsed = 0;
+    float elapsedStorm = 0;
     bool shrineActivated = false;
     public static bool spawnedClone = false;
     HashSet<ItemIndex> doppelBlacklist = new();
     public static ItemDef UmbralItem;
     IEnumerable<CharacterBody> mithies = null;
 
-    GameObject MagmaWorm = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/MagmaWorm/MagmaWormBody.prefab").WaitForCompletion();
+    static GameObject MagmaWorm = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/MagmaWorm/MagmaWormBody.prefab").WaitForCompletion();
     GameObject Throne = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/mdlBrotherThrone.fbx").WaitForCompletion();
-    GameObject ElectricWorm = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ElectricWorm/ElectricWormBody.prefab").WaitForCompletion();
+    static GameObject ElectricWorm = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ElectricWorm/ElectricWormBody.prefab").WaitForCompletion();
     GameObject Mithrix = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherBody.prefab").WaitForCompletion();
     GameObject Obelisk = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/mysteryspace/MSObelisk.prefab").WaitForCompletion();
     GameObject MithrixHurt = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherHurtBody.prefab").WaitForCompletion();
@@ -59,6 +60,8 @@ namespace UmbralMithrix
     static GameObject golemProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarGolem/LunarGolemTwinShotProjectile.prefab").WaitForCompletion();
     static SkillDef magmaWormBlink = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/MagmaWorm/MagmaWormBodyBlink.asset").WaitForCompletion();
     static SkillDef electricWormBlink = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/ElectricWorm/ElectricWormBodyBlink.asset").WaitForCompletion();
+    public static GameObject auriPreSword = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Titan/TitanGoldPreFistProjectile.prefab").WaitForCompletion();
+    public static GameObject auriSword = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Titan/TitanGoldFistEffect.prefab").WaitForCompletion();
     static GameObject vagrantOrb = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Vagrant/VagrantCannon.prefab").WaitForCompletion();
     static GameObject vagrantOrbGhost = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Vagrant/VagrantCannonGhost.prefab").WaitForCompletion();
     static GameObject axe = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/moon/mdlBrotherAxe.prefab").WaitForCompletion();
@@ -72,14 +75,34 @@ namespace UmbralMithrix
     public static GameObject noblePhantasm = PrefabAPI.InstantiateClone(vagrantOrb, "NoblePhantasm");
     public static GameObject noblePhantasmGhost = PrefabAPI.InstantiateClone(vagrantOrbGhost, "NoblePhantasmGhost");
     public static List<GameObject> weaponsList = new List<GameObject>() { noblePhantasmAxe, noblePhantasmHalberd, noblePhantasmHammer, noblePhantasmSword };
+    static GameObject voidling = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/MiniVoidRaidCrabBodyPhase3.prefab").WaitForCompletion();
+    static Material preBossMat = Addressables.LoadAssetAsync<Material>("RoR2/Base/Brother/matBrotherPreBossSphere.mat").WaitForCompletion();
+    static Material arenaWallMat = Addressables.LoadAssetAsync<Material>("RoR2/Base/moon/matMoonArenaWall.mat").WaitForCompletion();
+    static Material stealAuraMat = Addressables.LoadAssetAsync<Material>("RoR2/Base/Brother/matBrotherStealAura.mat").WaitForCompletion();
+    static Material moonMat = Addressables.LoadAssetAsync<Material>("RoR2/Base/moon/matMoonBridge.mat").WaitForCompletion();
+
     public void Awake()
     {
       ModConfig.InitConfig(Config);
       AddContent();
       CreateDoppelItem();
+      ParticleSystemRenderer psr = auriSword.transform.GetChild(0).GetChild(0).GetComponent<ParticleSystemRenderer>();
+      // psr.SetMeshes(new Mesh[] { weaponsList[0].GetComponent<MeshFilter>().mesh }, 1);
+      psr.material = moonMat;
+      psr.transform.localScale = new Vector3(psr.transform.localScale.x * 2, psr.transform.localScale.y * 2, psr.transform.localScale.z * 2);
       foreach (GameObject weapon in weaponsList)
         weapon.transform.localScale = new Vector3(weapon.transform.localScale.x * 2, weapon.transform.localScale.y * 2, weapon.transform.localScale.z * 2);
-      noblePhantasm.GetComponent<ProjectileController>().ghostPrefab = noblePhantasmGhost;
+      ProjectileController noblePhantasmController = noblePhantasm.GetComponent<ProjectileController>();
+      noblePhantasm.AddComponent<ProjectileSteerTowardTarget>();
+      noblePhantasm.GetComponent<ProjectileSteerTowardTarget>().rotationSpeed = 20;
+      noblePhantasm.AddComponent<ProjectileDirectionalTargetFinder>();
+      ProjectileDirectionalTargetFinder pdt = noblePhantasm.GetComponent<ProjectileDirectionalTargetFinder>();
+      pdt.lookRange = 80;
+      pdt.lookCone = 90;
+      pdt.allowTargetLoss = true;
+      auriPreSword.GetComponent<ProjectileController>().cannotBeDeleted = true;
+      noblePhantasmController.ghostPrefab = noblePhantasmGhost;
+      noblePhantasmController.GetComponent<ProjectileController>().cannotBeDeleted = true;
       On.RoR2.Run.Start += OnRunStart;
       On.EntityStates.EntityState.Update += SummonOnSprint;
       On.RoR2.CharacterBody.OnInventoryChanged += OnInventoryChanged;
@@ -387,12 +410,15 @@ namespace UmbralMithrix
       MithrixHurtBody.levelMoveSpeed = 0;
       MithrixHurtBody.baseDamage = ModConfig.basedamage.Value;
       MithrixHurtBody.levelDamage = ModConfig.leveldamage.Value;
-      MithrixHurtBody.baseArmor = ModConfig.basearmor.Value;
       SkillLocator skillLocatorM = MithrixHurt.GetComponent<SkillLocator>();
       SkillFamily fireLunarShardsHurt = skillLocatorM.primary.skillFamily;
       SkillDef fireLunarShardsHurtSkillDef = fireLunarShardsHurt.variants[0].skillDef;
-      fireLunarShardsHurtSkillDef.baseRechargeInterval = 12;
+      fireLunarShardsHurtSkillDef.baseRechargeInterval = 7;
       fireLunarShardsHurtSkillDef.baseMaxStock = 1;
+      SkillFamily fistSlam = skillLocatorM.secondary.skillFamily;
+      SkillDef fistSlamSkillDef = fistSlam.variants[0].skillDef;
+      fistSlamSkillDef.baseRechargeInterval = 10;
+      fistSlamSkillDef.baseMaxStock = 1;
     }
 
     private void CreateBlacklist()
@@ -625,6 +651,15 @@ namespace UmbralMithrix
       {
         if ((bool)PhaseCounter.instance)
         {
+          if (self.characterBody.name == "MiniVoidRaidCrabBodyPhase3(Clone)" && PhaseCounter.instance.phase == 4)
+          {
+            elapsedStorm += Time.deltaTime;
+            if (elapsedStorm >= 1f && self.gameObject.GetComponent<SphereZone>().Networkradius > 75)
+            {
+              elapsedStorm = elapsedStorm % 1f;
+              self.gameObject.GetComponent<SphereZone>().Networkradius -= 5;
+            }
+          }
           if (self.characterBody.isSprinting && self.characterBody.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase != 3)
           {
             elapsed += Time.deltaTime;
@@ -652,7 +687,7 @@ namespace UmbralMithrix
 
     private void FireRandomProjectilesOnEnter(On.EntityStates.BrotherHaunt.FireRandomProjectiles.orig_OnEnter orig, EntityStates.BrotherHaunt.FireRandomProjectiles self)
     {
-      EntityStates.BrotherHaunt.FireRandomProjectiles.chargeRechargeDuration = 1f;
+      EntityStates.BrotherHaunt.FireRandomProjectiles.chargeRechargeDuration = 0.8f;
       EntityStates.BrotherHaunt.FireRandomProjectiles.chanceToFirePerSecond = 0.01f;
       orig(self);
     }
@@ -693,7 +728,6 @@ namespace UmbralMithrix
             self.inventory.GiveItemString(UmbralItem.name);
             body.baseNameToken = "Wurms";
             body.subtitleNameToken = "Tendrils Of";
-            body.modelLocator._modelTransform.localScale = new Vector3(0.015f, 0.015f, 0.015f);
 
             if (body.name == "MagmaWormBody(Clone)")
             {
@@ -729,8 +763,10 @@ namespace UmbralMithrix
           {
             body.inventory.GiveItem(UmbralItem);
             body.AddBuff(RoR2Content.Buffs.Immune);
-            body.inventory.GiveItem(RoR2Content.Items.HealthDecay, 180);
+            body.inventory.GiveItem(RoR2Content.Items.HealthDecay, 60);
+            body.skillLocator.primary.skillFamily.variants[0].skillDef.interruptPriority = EntityStates.InterruptPriority.Skill;
             body.skillLocator.primary.skillFamily.variants[0].skillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(GateOfBabylon));
+            body.skillLocator.secondary.skillFamily.variants[0].skillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(FieldOfSwords));
           }
         }
       }
@@ -948,16 +984,28 @@ namespace UmbralMithrix
 
         if (!ModConfig.doppelPhase4.Value)
         {
-          // Spawn in BrotherHaunt (Random Flame Lines)
-          GameObject brotherHauntGO = Instantiate(BrotherHaunt);
-          brotherHauntGO.GetComponent<TeamComponent>().teamIndex = (TeamIndex)2;
-          NetworkServer.Spawn(brotherHauntGO);
-        }
+          GameObject brotherHauntInstance = Instantiate(BrotherHaunt);
+          brotherHauntInstance.GetComponent<TeamComponent>().teamIndex = (TeamIndex)2;
+          NetworkServer.Spawn(brotherHauntInstance);
+          // Makes model invisible
+          voidling.transform.GetChild(0).gameObject.SetActive(false);
 
-        if (ModConfig.doppelPhase4.Value)
-        {
-          Chat.AddMessage(new Chat.SimpleChatMessage() { baseToken = "<color=#8826dd>???: We...</color>" });
-          Chat.AddMessage(new Chat.SimpleChatMessage() { baseToken = "<color=#8826dd>???: Will have our vengeance</color>" });
+          GameObject voidlingInstance = Instantiate(voidling, new Vector3(-88.5f, 520f, -0.3f), Quaternion.identity);
+          voidlingInstance.GetComponent<TeamComponent>().teamIndex = (TeamIndex)2;
+          SkillLocator voidlingSkillLocator = voidlingInstance.GetComponent<CharacterBody>().skillLocator;
+          voidlingSkillLocator.primary = new GenericSkill();
+          voidlingSkillLocator.secondary = new GenericSkill();
+          voidlingSkillLocator.utility = new GenericSkill();
+          voidlingSkillLocator.special = new GenericSkill();
+          List<Material> materials = new List<Material> { preBossMat, arenaWallMat, stealAuraMat };
+          Transform sphereIndicator = voidlingInstance.transform.GetChild(1).GetChild(0);
+          sphereIndicator.GetComponent<MeshRenderer>().SetMaterials(materials);
+          SphereZone sphere = voidlingInstance.GetComponent<SphereZone>();
+          sphere.radius = 250;
+          FogDamageController fogController = voidlingInstance.GetComponent<FogDamageController>();
+          fogController.healthFractionPerSecond = 0.05f;
+          fogController.healthFractionRampCoefficientPerSecond = 10f;
+          NetworkServer.Spawn(voidlingInstance);
         }
       }
       orig(self);
@@ -968,7 +1016,7 @@ namespace UmbralMithrix
       orig(self);
       if (shrineActivated)
       {
-        // Kill BrotherHaunt once the boss dies
+        GameObject.Find("MiniVoidRaidCrabBodyPhase3(Clone)").GetComponent<HealthComponent>().Suicide();
         GameObject.Find("BrotherHauntBody(Clone)").GetComponent<HealthComponent>().Suicide();
       }
     }

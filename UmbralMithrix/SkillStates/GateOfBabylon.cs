@@ -14,7 +14,7 @@ namespace UmbralMithrix
   {
     private float stopwatch;
     private float missileStopwatch;
-    public static float baseDuration = 8;
+    public static float baseDuration = 4;
     public static string muzzleString = FireLunarShards.muzzleString;
     public static float missileSpawnFrequency = 12;
     public static float missileSpawnDelay = 0;
@@ -42,7 +42,6 @@ namespace UmbralMithrix
     }
     private void FireBlob(Ray projectileRay, float bonusPitch, float bonusYaw)
     {
-      Chat.SendBroadcastChat(new Chat.SimpleChatMessage() { baseToken = $"duration {JellyBarrage.baseDuration} | freq {JellyBarrage.missileSpawnFrequency} | delay {JellyBarrage.missileSpawnDelay}" });
       this.PlayAnimation("Gesture, Additive", nameof(FireLunarShards));
       this.PlayAnimation("Gesture, Override", nameof(FireLunarShards));
       int randIdx = rand.Next(UmbralMithrix.weaponsList.Count);
@@ -74,9 +73,9 @@ namespace UmbralMithrix
         {
           Ray aimRay = this.GetAimRay();
           float maxDistance = 1000f;
-          float randX = UnityEngine.Random.Range(-5f, 50f);
+          float randX = UnityEngine.Random.Range(-25f, 25f);
           float randY = UnityEngine.Random.Range(0f, 15f);
-          float randZ = UnityEngine.Random.Range(-5f, 50f);
+          float randZ = UnityEngine.Random.Range(-25f, 25f);
           Vector3 randVector = new Vector3(randX, randY, randZ);
           Vector3 position = new Vector3(child.position.x, child.position.y, child.position.z) + randVector;
           aimRay.origin = position;
