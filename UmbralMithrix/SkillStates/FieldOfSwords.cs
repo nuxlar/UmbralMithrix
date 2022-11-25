@@ -12,9 +12,9 @@ namespace UmbralMithrix
 {
   public class FieldOfSwords : BaseState
   {
-    public static float entryDuration = 1.5f;
+    public static float entryDuration = 2f;
     public static float fireDuration = 2f;
-    public static float exitDuration = 1f;
+    public static float exitDuration = 1.5f;
     [SerializeField]
     public GameObject chargeEffectPrefab;
     [SerializeField]

@@ -654,10 +654,10 @@ namespace UmbralMithrix
           if (self.characterBody.name == "MiniVoidRaidCrabBodyPhase3(Clone)" && PhaseCounter.instance.phase == 4)
           {
             elapsedStorm += Time.deltaTime;
-            if (elapsedStorm >= 1f && self.gameObject.GetComponent<SphereZone>().Networkradius > 75)
+            if (elapsedStorm >= 1f && self.gameObject.GetComponent<SphereZone>().Networkradius > 100)
             {
               elapsedStorm = elapsedStorm % 1f;
-              self.gameObject.GetComponent<SphereZone>().Networkradius -= 5;
+              self.gameObject.GetComponent<SphereZone>().Networkradius -= 2;
             }
           }
           if (self.characterBody.isSprinting && self.characterBody.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase != 3)
@@ -688,7 +688,7 @@ namespace UmbralMithrix
     private void FireRandomProjectilesOnEnter(On.EntityStates.BrotherHaunt.FireRandomProjectiles.orig_OnEnter orig, EntityStates.BrotherHaunt.FireRandomProjectiles self)
     {
       EntityStates.BrotherHaunt.FireRandomProjectiles.chargeRechargeDuration = 0.8f;
-      EntityStates.BrotherHaunt.FireRandomProjectiles.chanceToFirePerSecond = 0.01f;
+      EntityStates.BrotherHaunt.FireRandomProjectiles.chanceToFirePerSecond = 0.1f;
       orig(self);
     }
 
@@ -984,7 +984,7 @@ namespace UmbralMithrix
 
         if (!ModConfig.doppelPhase4.Value)
         {
-          GameObject brotherHauntInstance = Instantiate(BrotherHaunt);
+          GameObject brotherHauntInstance = Instantiate(BrotherHaunt, new Vector3(-88.5f, 490f, -0.3f), Quaternion.identity);
           brotherHauntInstance.GetComponent<TeamComponent>().teamIndex = (TeamIndex)2;
           NetworkServer.Spawn(brotherHauntInstance);
           // Makes model invisible
@@ -1001,7 +1001,7 @@ namespace UmbralMithrix
           Transform sphereIndicator = voidlingInstance.transform.GetChild(1).GetChild(0);
           sphereIndicator.GetComponent<MeshRenderer>().SetMaterials(materials);
           SphereZone sphere = voidlingInstance.GetComponent<SphereZone>();
-          sphere.radius = 250;
+          sphere.radius = 275;
           FogDamageController fogController = voidlingInstance.GetComponent<FogDamageController>();
           fogController.healthFractionPerSecond = 0.05f;
           fogController.healthFractionRampCoefficientPerSecond = 10f;
