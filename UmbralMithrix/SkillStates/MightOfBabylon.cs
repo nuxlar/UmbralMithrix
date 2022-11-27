@@ -10,9 +10,9 @@ using EntityStates.BrotherMonster;
 
 namespace UmbralMithrix
 {
-  public class FieldOfSwords : BaseState
+  public class MightOfBabylon : BaseState
   {
-    public static float entryDuration = 2f;
+    public static float entryDuration = 2.25f;
     public static float fireDuration = 2f;
     public static float exitDuration = 1.5f;
     [SerializeField]
@@ -41,6 +41,7 @@ namespace UmbralMithrix
     private FireFist.SubState subState;
     private FireFist.Predictor predictor;
     private GameObject predictorDebug;
+    static Material moonMat = Addressables.LoadAssetAsync<Material>("RoR2/Base/moon/matMoonBridge.mat").WaitForCompletion();
     static System.Random rand = new();
 
     public override void OnEnter()
@@ -169,6 +170,11 @@ namespace UmbralMithrix
     {
       if (!this.isAuthority)
         return;
+      int randIdx = rand.Next(UmbralMithrix.weaponsGroundList.Count);
+      MeshFilter weaponMeshFilter = UmbralMithrix.weaponsGroundList[randIdx].GetComponent<MeshFilter>();
+      ParticleSystemRenderer psr = UmbralMithrix.auriSword.transform.GetChild(0).GetChild(0).GetComponent<ParticleSystemRenderer>();
+      psr.SetMeshes(new Mesh[] { weaponMeshFilter.mesh }, 1);
+      psr.material = moonMat;
       ProjectileManager.instance.FireProjectile(new FireProjectileInfo()
       {
         projectilePrefab = new FireGoldFist().fistProjectilePrefab,

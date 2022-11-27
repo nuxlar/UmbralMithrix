@@ -72,18 +72,20 @@ namespace UmbralMithrix
         if ((bool)(Object)child)
         {
           Ray aimRay = this.GetAimRay();
+          Ray projectileRay = new Ray();
+          projectileRay.direction = aimRay.direction;
           float maxDistance = 1000f;
           float randX = UnityEngine.Random.Range(-25f, 25f);
           float randY = UnityEngine.Random.Range(0f, 15f);
           float randZ = UnityEngine.Random.Range(-25f, 25f);
           Vector3 randVector = new Vector3(randX, randY, randZ);
           Vector3 position = new Vector3(child.position.x, child.position.y, child.position.z) + randVector;
-          aimRay.origin = position;
+          projectileRay.origin = position;
           RaycastHit hitInfo;
           {
             if (Physics.Raycast(aimRay, out hitInfo, maxDistance, (int)LayerIndex.world.mask))
-              aimRay.direction = hitInfo.point - aimRay.origin;
-            this.FireBlob(aimRay, 0.0f, 0.0f);
+              projectileRay.direction = hitInfo.point - projectileRay.origin;
+            this.FireBlob(projectileRay, 0.0f, 0.0f);
           }
         }
         if ((double)this.stopwatch < (double)baseDuration || !this.isAuthority)

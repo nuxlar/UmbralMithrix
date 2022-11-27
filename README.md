@@ -1,15 +1,14 @@
 # Umbral Mithrix
 
-Accursed Mithrix **reworked** variant with clones and new Phase 4 (For more info on the [base mod](https://thunderstore.io/package/Nuxlar/MithrixTheAccursed/)).
-
-Blacklisted Items (from mithy and doppels): Tesla, Nkuhanas, Empathy, Drone Parts, Razorwire
+Accursed Mithrix **reworked** variant with clones and new phases (For more info on the [base mod](https://thunderstore.io/package/Nuxlar/MithrixTheAccursed/)).
 
 Phase info:
 
 - Phase 1 Mithrix now jumps on you for a Crushing Leap, get in the air. Bash, Slam, and Sprint spawn a Glass Clone on each survivor.
-- Phase 2 (skippable) A clone splits off from the shadow and harnesses the hammer's power.
-- Phase 3 The shadow splits into 2 (50% HP Each for 1-2 players).
-- Phase 4 Two Umbral Wurms spawn, each with their own devastating attack.
+- Phase 2 (skippable) An umbral clone spawns in after Crushing Leap to hunt.
+- Phase 3 The shadow splits into 2.
+- Phase 4 Survival or Umbral Wurms (configurable)
+- Phase 5 Congrats! look up and enjoy the fireworks
 
 ## How to Activate
 
@@ -24,25 +23,24 @@ The mod is highly configurable. You can edit config values in-game and during ru
 ![mod options](https://i.ibb.co/q9fC9jj/Screenshot-2022-09-12-165657.png)
 
 ## Future Plans
-- Rework ItemSteal Phase 4
-- Tenta anti-cheese without completely removing it
-- "OSP"
-- Fully functional shared HP bar for Phase 3
-- Umbral Chimera fight to replace pillars
+- Make P4 configurable
+- Adding ?????
 
 ## Changelog
 
-**1.8.0**
+**1.8.0 (Cheers to Race and Cap for the Survival P4 idea and helping test/balance/brainstorm!)**
 
-- Makes wurms thicc and longer?
+- Fixing some vanilla mithy bugs
+- Changes Crushing Leap jump sound to be louder 
+- Changes Crushing Leap indicator to be more clear when Mithy is about to land
 - Reworks ItemSteal Phase 4
-  - Survive
-  - Mithrix is immune with his HP dwindling (3 min)
-  - Random full pizzas spawning
-  - Every minute he gains an attack and a piece of the arena disappears
-  - 0 min Lasers (Titan, Xi, Voidling, Ball) lightening chains sun
-  - 1 min 
-  - 2 min Adds WurmOrbs attack
+  - Survive...
+  - Mithrix is immune with his HP dwindling (1 min)
+  - Random P3 pizzas spawning
+  - Mithrix creates a shrinking orb that forces players to get close or perish
+  - Mithrix has 2 new attacks
+    - Gate of Babylon: Mithrix materializes and launches his vast arsenal
+    - Might of Babylon: Mithrix manipulates the arena creating a sea of blades
 
 <details>
 <summary>1.7.1 and below</summary>
