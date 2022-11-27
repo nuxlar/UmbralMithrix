@@ -12,7 +12,7 @@ namespace UmbralMithrix
     public static AnimationCurve revolutionsCurve;
     public static GameObject beamVfxPrefab;
     public static float beamRadius = 16f;
-    public static float beamMaxDistance = 200f;
+    public static float beamMaxDistance = 400f;
     public static float beamDpsCoefficient = 1f;
     public static float beamTickFrequency = 4f;
     public float baseDuration = 5;
@@ -72,7 +72,7 @@ namespace UmbralMithrix
         aimVector = beamRay.direction,
         minSpread = 0.0f,
         maxSpread = 0.0f,
-        maxDistance = 200f,
+        maxDistance = 400f,
         hitMask = LayerIndex.CommonMasks.bullet,
         stopperMask = ((LayerMask)0),
         bulletCount = 1U,

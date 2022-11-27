@@ -11,14 +11,13 @@ using System.Linq;
 using System.Collections.Generic;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.7.1")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.8.0")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -34,13 +33,15 @@ namespace UmbralMithrix
     bool hasfired;
     public int phaseCounter = 0;
     float elapsed = 0;
+    float elapsedStorm = 0;
     bool shrineActivated = false;
     public static bool spawnedClone = false;
-    HashSet<ItemIndex> doppelBlacklist = new();
     public static ItemDef UmbralItem;
     IEnumerable<CharacterBody> mithies = null;
-    GameObject MagmaWorm = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/MagmaWorm/MagmaWormBody.prefab").WaitForCompletion();
-    GameObject ElectricWorm = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ElectricWorm/ElectricWormBody.prefab").WaitForCompletion();
+
+    static GameObject MagmaWorm = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/MagmaWorm/MagmaWormBody.prefab").WaitForCompletion();
+    GameObject Throne = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/mdlBrotherThrone.fbx").WaitForCompletion();
+    static GameObject ElectricWorm = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ElectricWorm/ElectricWormBody.prefab").WaitForCompletion();
     GameObject Mithrix = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherBody.prefab").WaitForCompletion();
     GameObject Obelisk = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/mysteryspace/MSObelisk.prefab").WaitForCompletion();
     GameObject MithrixHurt = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherHurtBody.prefab").WaitForCompletion();
@@ -58,6 +59,32 @@ namespace UmbralMithrix
     static GameObject golemProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarGolem/LunarGolemTwinShotProjectile.prefab").WaitForCompletion();
     static SkillDef magmaWormBlink = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/MagmaWorm/MagmaWormBodyBlink.asset").WaitForCompletion();
     static SkillDef electricWormBlink = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/ElectricWorm/ElectricWormBodyBlink.asset").WaitForCompletion();
+    public static GameObject auriPreSword = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Titan/TitanGoldPreFistProjectile.prefab").WaitForCompletion();
+    public static GameObject auriSword = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Titan/TitanGoldFistEffect.prefab").WaitForCompletion();
+    static GameObject vagrantOrb = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Vagrant/VagrantCannon.prefab").WaitForCompletion();
+    static GameObject vagrantOrbGhost = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Vagrant/VagrantCannonGhost.prefab").WaitForCompletion();
+    static GameObject axe = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/moon/mdlBrotherAxe.prefab").WaitForCompletion();
+    static GameObject halberd = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/moon/mdlBrotherHalberd.prefab").WaitForCompletion();
+    static GameObject hammer = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/moon/mdlBrotherHammer.prefab").WaitForCompletion();
+    static GameObject sword = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/moon/mdlBrotherSword.prefab").WaitForCompletion();
+    static GameObject noblePhantasmAxe = PrefabAPI.InstantiateClone(axe, "NoblePhantasmAxe");
+    static GameObject noblePhantasmHalberd = PrefabAPI.InstantiateClone(halberd, "NoblePhantasmHalberd");
+    static GameObject noblePhantasmHammer = PrefabAPI.InstantiateClone(hammer, "NoblePhantasmHammer");
+    static GameObject noblePhantasmSword = PrefabAPI.InstantiateClone(sword, "NoblePhantasmSword");
+    static GameObject noblePhantasmGroundAxe = PrefabAPI.InstantiateClone(axe, "NoblePhantasmGroundAxe");
+    static GameObject noblePhantasmGroundHalberd = PrefabAPI.InstantiateClone(halberd, "NoblePhantasmHalberd");
+    static GameObject noblePhantasmGroundHammer = PrefabAPI.InstantiateClone(hammer, "NoblePhantasmGroundHammer");
+    static GameObject noblePhantasmGroundSword = PrefabAPI.InstantiateClone(sword, "NoblePhantasmGroundSword");
+    public static GameObject noblePhantasm = PrefabAPI.InstantiateClone(vagrantOrb, "NoblePhantasm");
+    public static GameObject noblePhantasmGhost = PrefabAPI.InstantiateClone(vagrantOrbGhost, "NoblePhantasmGhost");
+    public static List<GameObject> weaponsList = new List<GameObject>() { noblePhantasmAxe, noblePhantasmHalberd, noblePhantasmHammer, noblePhantasmSword };
+    public static List<GameObject> weaponsGroundList = new List<GameObject>() { noblePhantasmGroundAxe, noblePhantasmGroundHalberd, noblePhantasmGroundHammer, noblePhantasmGroundSword };
+    static GameObject voidling = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/MiniVoidRaidCrabBodyPhase3.prefab").WaitForCompletion();
+    static Material preBossMat = Addressables.LoadAssetAsync<Material>("RoR2/Base/Brother/matBrotherPreBossSphere.mat").WaitForCompletion();
+    static Material arenaWallMat = Addressables.LoadAssetAsync<Material>("RoR2/Base/moon/matMoonArenaWall.mat").WaitForCompletion();
+    static Material stealAuraMat = Addressables.LoadAssetAsync<Material>("RoR2/Base/Brother/matBrotherStealAura.mat").WaitForCompletion();
+    static Mesh auriPsrMesh = auriSword.transform.GetChild(0).GetChild(0).GetComponent<ParticleSystemRenderer>().mesh;
+    static Material auriPsrMat = auriSword.transform.GetChild(0).GetChild(0).GetComponent<ParticleSystemRenderer>().material;
 
     public void Awake()
     {
@@ -66,12 +93,13 @@ namespace UmbralMithrix
       CreateDoppelItem();
       On.RoR2.Run.Start += OnRunStart;
       On.EntityStates.EntityState.Update += SummonOnSprint;
-      On.RoR2.CharacterBody.OnInventoryChanged += OnInventoryChanged;
       On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.OnEnter += ReadyToEndGameOnEnter;
       On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.FixedUpdate += ReadyToEndGameFixedUpdate;
       On.RoR2.Stage.Start += StageStart;
       On.RoR2.HealthComponent.TakeDamage += TakeDamage;
       On.RoR2.CharacterMaster.OnBodyStart += CharacterMasterOnBodyStart;
+      On.EntityStates.BrotherHaunt.FireRandomProjectiles.OnEnter += FireRandomProjectilesOnEnter;
+      On.EntityStates.BrotherHaunt.FireRandomProjectiles.FireProjectile += FireRandomProjectilesFireProjectile;
       On.EntityStates.BrotherMonster.SkyLeapDeathState.OnEnter += SkyLeapDeathStateOnEnter;
       On.EntityStates.Missions.BrotherEncounter.BrotherEncounterPhaseBaseState.OnEnter += BrotherEncounterPhaseBaseStateOnEnter;
       On.EntityStates.Missions.BrotherEncounter.Phase1.OnEnter += Phase1OnEnter;
@@ -86,7 +114,6 @@ namespace UmbralMithrix
       On.EntityStates.BrotherMonster.WeaponSlam.FixedUpdate += WeaponSlamFixedUpdate;
       On.EntityStates.BrotherMonster.WeaponSlam.OnEnter += CleanupPillar;
       On.EntityStates.BrotherMonster.Weapon.FireLunarShards.OnEnter += FireLunarShardsOnEnter;
-      On.EntityStates.BrotherMonster.FistSlam.OnEnter += FistSlamOnEnter;
       On.EntityStates.BrotherMonster.UltChannelState.FireWave += UltChannelStateFireWave;
       On.EntityStates.BrotherMonster.SpellChannelEnterState.OnEnter += SpellChannelEnterStateOnEnter;
       On.EntityStates.BrotherMonster.SpellChannelExitState.OnEnter += SpellChannelExitStateOnEnter;
@@ -94,6 +121,49 @@ namespace UmbralMithrix
       On.EntityStates.BrotherMonster.StaggerExit.OnEnter += StaggerExitOnEnter;
       On.EntityStates.BrotherMonster.StaggerLoop.OnEnter += StaggerLoopOnEnter;
       On.EntityStates.BrotherMonster.TrueDeathState.OnEnter += TrueDeathStateOnEnter;
+    }
+
+    private void SetupNoblePhantasm()
+    {
+      foreach (GameObject weapon in weaponsList)
+        weapon.transform.localScale = new Vector3(weapon.transform.localScale.x * 2, weapon.transform.localScale.y * 2, weapon.transform.localScale.z * 2);
+      ProjectileController noblePhantasmController = noblePhantasm.GetComponent<ProjectileController>();
+      noblePhantasm.AddComponent<ProjectileSteerTowardTarget>();
+      noblePhantasm.GetComponent<ProjectileSteerTowardTarget>().rotationSpeed = 15;
+      noblePhantasm.AddComponent<ProjectileDirectionalTargetFinder>();
+      ProjectileDirectionalTargetFinder pdt = noblePhantasm.GetComponent<ProjectileDirectionalTargetFinder>();
+      pdt.lookRange = 80;
+      pdt.lookCone = 90;
+      pdt.allowTargetLoss = true;
+      auriPreSword.GetComponent<ProjectileController>().cannotBeDeleted = true;
+      noblePhantasmController.ghostPrefab = noblePhantasmGhost;
+      noblePhantasmController.GetComponent<ProjectileController>().cannotBeDeleted = true;
+    }
+
+    private void SetupGroundPhantasm()
+    {
+      ParticleSystemRenderer psr = auriSword.transform.GetChild(0).GetChild(0).GetComponent<ParticleSystemRenderer>();
+      psr.transform.localScale = new Vector3(10, 10, 10);
+      foreach (GameObject weapon in weaponsGroundList)
+      {
+        MeshFilter weaponMeshFilter = weapon.GetComponent<MeshFilter>();
+        weaponMeshFilter.transform.rotation = Quaternion.AngleAxis(180, Vector3.up);
+        CombineInstance combineInstance = new CombineInstance { mesh = weaponMeshFilter.sharedMesh, transform = weaponMeshFilter.transform.localToWorldMatrix };
+        CombineInstance[] ciArr = new CombineInstance[] { combineInstance };
+        weaponMeshFilter.mesh.CombineMeshes(ciArr, true);
+      }
+    }
+
+    private void RevertMiscToVanilla()
+    {
+      // Revert Auri Sword Effect to vanilla
+      ParticleSystemRenderer psr = auriSword.transform.GetChild(0).GetChild(0).GetComponent<ParticleSystemRenderer>();
+      psr.transform.localScale = new Vector3(1, 1, 1);
+      psr.SetMeshes(new Mesh[] { auriPsrMesh }, 1);
+      psr.material = auriPsrMat;
+
+      // Revert Voidling to vanilla
+      voidling.transform.GetChild(0).gameObject.SetActive(true);
     }
 
     private void RevertToVanillaStats()
@@ -117,6 +187,9 @@ namespace UmbralMithrix
       MithrixHurtBody.baseMaxHealth = 1400;
       MithrixHurtBody.levelMaxHealth = 420;
       MithrixHurtBody.baseArmor = 20;
+      MithrixHurtBody.baseDamage = 3;
+      MithrixHurtBody.levelDamage = 0.6f;
+      MithrixHurtBody.baseMoveSpeed = 4;
       // Mithrix Hurt
 
       MithrixBody.baseAttackSpeed = 1;
@@ -157,6 +230,12 @@ namespace UmbralMithrix
       SkillDef fireLunarShardsHurtSkillDef = fireLunarShardsHurt.variants[0].skillDef;
       fireLunarShardsHurtSkillDef.baseRechargeInterval = 6;
       fireLunarShardsHurtSkillDef.baseMaxStock = 12;
+      fireLunarShardsHurtSkillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(FireLunarShardsHurt));
+      SkillFamily fistSlamHurt = skillLocator.secondary.skillFamily;
+      SkillDef fistSlamHurtSkillDef = fistSlamHurt.variants[0].skillDef;
+      fistSlamHurtSkillDef.baseRechargeInterval = 8;
+      fistSlamHurtSkillDef.baseMaxStock = 1;
+      fistSlamHurtSkillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(FistSlam));
       // Mithrix
       SkillFamily Hammer = SklLocate.primary.skillFamily;
       SkillDef HammerChange = Hammer.variants[0].skillDef;
@@ -270,7 +349,6 @@ namespace UmbralMithrix
       BashChange.baseRechargeInterval = ModConfig.SecCD.Value;
       BashChange.baseMaxStock = ModConfig.SecStocks.Value;
 
-      // Replace dash with blink (creating new skilldef so it can be done while midair)
       SkillFamily Dash = SklLocate.utility.skillFamily;
       SkillDef DashChange = Dash.variants[0].skillDef;
       DashChange.baseMaxStock = ModConfig.UtilStocks.Value;
@@ -366,26 +444,19 @@ namespace UmbralMithrix
         MithrixHurtBody.levelMaxHealth = ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier);
       }
 
-      MithrixHurtBody.baseArmor = ModConfig.basearmor.Value;
+      MithrixHurtBody.baseMoveSpeed = 0;
+      MithrixHurtBody.levelMoveSpeed = 0;
+      MithrixHurtBody.baseDamage = ModConfig.basedamage.Value;
+      MithrixHurtBody.levelDamage = ModConfig.leveldamage.Value;
       SkillLocator skillLocatorM = MithrixHurt.GetComponent<SkillLocator>();
       SkillFamily fireLunarShardsHurt = skillLocatorM.primary.skillFamily;
       SkillDef fireLunarShardsHurtSkillDef = fireLunarShardsHurt.variants[0].skillDef;
-      fireLunarShardsHurtSkillDef.baseRechargeInterval = ModConfig.SuperShardCD.Value;
-      fireLunarShardsHurtSkillDef.baseMaxStock = ModConfig.SuperShardCount.Value;
-    }
-
-    private void CreateBlacklist()
-    {
-      // N'kuhanas Opinion
-      doppelBlacklist.Add(RoR2Content.Items.NovaOnHeal.itemIndex);
-      // Tesla Coil
-      doppelBlacklist.Add(RoR2Content.Items.ShockNearby.itemIndex);
-      // Razorwire
-      doppelBlacklist.Add(RoR2Content.Items.Thorns.itemIndex);
-      // Empathy Cores
-      doppelBlacklist.Add(RoR2Content.Items.RoboBallBuddy.itemIndex);
-      // Spare Drone Parts
-      doppelBlacklist.Add(DLC1Content.Items.DroneWeapons.itemIndex);
+      fireLunarShardsHurtSkillDef.baseRechargeInterval = 7;
+      fireLunarShardsHurtSkillDef.baseMaxStock = 1;
+      SkillFamily fistSlam = skillLocatorM.secondary.skillFamily;
+      SkillDef fistSlamSkillDef = fistSlam.variants[0].skillDef;
+      fistSlamSkillDef.baseRechargeInterval = 8.5f;
+      fistSlamSkillDef.baseMaxStock = 1;
     }
 
     private void AddContent()
@@ -396,7 +467,9 @@ namespace UmbralMithrix
       ContentAddition.AddEntityState<ExitCrushingLeap>(out _);
       ContentAddition.AddEntityState<FireWurmLaser>(out _);
       ContentAddition.AddEntityState<FireWurmOrbs>(out _);
+      ContentAddition.AddProjectile(noblePhantasm);
     }
+
     private void CreateDoppelItem()
     {
       LanguageAPI.Add("UMBRALMITHRIX_UMBRAL_ITEM", "Origin Bonus");
@@ -481,20 +554,6 @@ namespace UmbralMithrix
       };
     }
 
-    private void OnInventoryChanged(On.RoR2.CharacterBody.orig_OnInventoryChanged orig, CharacterBody self)
-    {
-      orig(self);
-      if (NetworkServer.active && self.inventory && shrineActivated && phaseCounter == 3 && (self.inventory.GetItemCount(UmbralItem) > 0 || self.inventory.GetItemCount(RoR2Content.Items.InvadingDoppelganger) > 0))
-      {
-        // Remove Blacklisted Items
-        foreach (ItemIndex item in doppelBlacklist)
-        {
-          int itemCount = self.inventory.GetItemCount(item);
-          if (itemCount > 0)
-            self.inventory.RemoveItem(item, itemCount);
-        }
-      }
-    }
     private void StageStart(On.RoR2.Stage.orig_Start orig, RoR2.Stage self)
     {
       orig(self);
@@ -541,7 +600,7 @@ namespace UmbralMithrix
     private void OnRunStart(On.RoR2.Run.orig_Start orig, Run self)
     {
       shrineActivated = false;
-      CreateBlacklist();
+      RevertMiscToVanilla();
       RevertToVanillaStats();
       RevertToVanillaSkills();
       orig(self);
@@ -602,6 +661,15 @@ namespace UmbralMithrix
       {
         if ((bool)PhaseCounter.instance)
         {
+          if (self.characterBody.name == "MiniVoidRaidCrabBodyPhase3(Clone)" && PhaseCounter.instance.phase == 4)
+          {
+            elapsedStorm += Time.deltaTime;
+            if (elapsedStorm >= 1f && self.gameObject.GetComponent<SphereZone>().Networkradius > 100)
+            {
+              elapsedStorm = elapsedStorm % 1f;
+              self.gameObject.GetComponent<SphereZone>().Networkradius -= 2;
+            }
+          }
           if (self.characterBody.isSprinting && self.characterBody.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase != 3)
           {
             elapsed += Time.deltaTime;
@@ -627,6 +695,49 @@ namespace UmbralMithrix
       }
     }
 
+    private void FireRandomProjectilesOnEnter(On.EntityStates.BrotherHaunt.FireRandomProjectiles.orig_OnEnter orig, EntityStates.BrotherHaunt.FireRandomProjectiles self)
+    {
+      if (shrineActivated)
+      {
+        EntityStates.BrotherHaunt.FireRandomProjectiles.chargeRechargeDuration = 1f;
+        EntityStates.BrotherHaunt.FireRandomProjectiles.chanceToFirePerSecond = 0.1f;
+      }
+      else
+      {
+        EntityStates.BrotherHaunt.FireRandomProjectiles.chargeRechargeDuration = 0.5f;
+        EntityStates.BrotherHaunt.FireRandomProjectiles.chanceToFirePerSecond = 0.5f;
+      }
+      orig(self);
+    }
+
+    private void FireRandomProjectilesFireProjectile(On.EntityStates.BrotherHaunt.FireRandomProjectiles.orig_FireProjectile orig, EntityStates.BrotherHaunt.FireRandomProjectiles self)
+    {
+      if (shrineActivated)
+      {
+        // get random idx to grab a random player
+        System.Random r = new System.Random();
+        int rIdx = r.Next(0, PlayerCharacterMasterController.instances.Count - 1);
+        PlayerCharacterMasterController player = PlayerCharacterMasterController.instances[rIdx];
+
+        Vector3 position = new Vector3(player.body.footPosition.x, 490, player.body.footPosition.z) + new Vector3(UnityEngine.Random.Range(-50f, 50f), 0.0f, UnityEngine.Random.Range(-50f, 50f));
+
+        GameObject prefab = UltChannelState.waveProjectileLeftPrefab;
+        if ((double)UnityEngine.Random.value <= 0.5)
+          prefab = UltChannelState.waveProjectileRightPrefab;
+
+        int num = 360 / (ModConfig.UltimateWaves.Value / 2);
+        Vector3 normalized = Vector3.ProjectOnPlane(UnityEngine.Random.onUnitSphere, Vector3.up).normalized;
+
+        for (int index = 0; index < (ModConfig.UltimateWaves.Value / 2); ++index)
+        {
+          Vector3 forward = Quaternion.AngleAxis(num * (float)index, Vector3.up) * normalized;
+          ProjectileManager.instance.FireProjectile(prefab, position, Util.QuaternionSafeLookRotation(forward), self.gameObject, self.characterBody.damage * UltChannelState.waveProjectileDamageCoefficient, UltChannelState.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master));
+        }
+      }
+      else
+        orig(self);
+    }
+
     private void CharacterMasterOnBodyStart(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
     {
       orig(self, body);
@@ -648,25 +759,19 @@ namespace UmbralMithrix
                 body.baseMaxHealth = electricWurm.baseMaxHealth;
                 body.levelMaxHealth = electricWurm.levelMaxHealth;
               }
-              Task.Delay(1000).ContinueWith((x) =>
-              {
-                SkillDef magmaWormBlinkDef = body.skillLocator.utility.skillFamily.variants[0].skillDef;
-                magmaWormBlinkDef.activationState = new EntityStates.SerializableEntityStateType(typeof(FireWurmLaser));
-                magmaWormBlinkDef.baseRechargeInterval = (float)ModConfig.WurmLaserCD.Value;
-                magmaWormBlinkDef.beginSkillCooldownOnSkillEnd = true;
-                magmaWormBlinkDef.interruptPriority = EntityStates.InterruptPriority.Death;
-              });
+              SkillDef magmaWormBlinkDef = body.skillLocator.utility.skillFamily.variants[0].skillDef;
+              magmaWormBlinkDef.activationState = new EntityStates.SerializableEntityStateType(typeof(FireWurmLaser));
+              magmaWormBlinkDef.baseRechargeInterval = (float)ModConfig.WurmLaserCD.Value;
+              magmaWormBlinkDef.beginSkillCooldownOnSkillEnd = true;
+              magmaWormBlinkDef.interruptPriority = EntityStates.InterruptPriority.Death;
             }
             if (body.name == "ElectricWormBody(Clone)")
             {
-              Task.Delay(1000).ContinueWith((x) =>
-              {
-                SkillDef electricWormBlinkDef = body.skillLocator.utility.skillFamily.variants[0].skillDef;
-                electricWormBlinkDef.activationState = new EntityStates.SerializableEntityStateType(typeof(FireWurmOrbs));
-                electricWormBlinkDef.baseRechargeInterval = (float)ModConfig.WurmOrbCD.Value;
-                electricWormBlinkDef.beginSkillCooldownOnSkillEnd = true;
-                electricWormBlinkDef.interruptPriority = EntityStates.InterruptPriority.Death;
-              });
+              SkillDef electricWormBlinkDef = body.skillLocator.utility.skillFamily.variants[0].skillDef;
+              electricWormBlinkDef.activationState = new EntityStates.SerializableEntityStateType(typeof(FireWurmOrbs));
+              electricWormBlinkDef.baseRechargeInterval = (float)ModConfig.WurmOrbCD.Value;
+              electricWormBlinkDef.beginSkillCooldownOnSkillEnd = true;
+              electricWormBlinkDef.interruptPriority = EntityStates.InterruptPriority.Death;
             }
           }
           if ((PhaseCounter.instance.phase == 2 || PhaseCounter.instance.phase == 3) && (body.name == "LunarGolemBody(Clone)" || body.name == "LunarExploderBody(Clone)" || body.name == "LunarWispBody(Clone)"))
@@ -676,10 +781,14 @@ namespace UmbralMithrix
           // Make Mithrix an Umbra
           if ((body.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase == 3) || (body.name == "BrotherHurtBody(Clone)" || body.name == "BrotherGlassBody(Clone)"))
             self.inventory.GiveItemString(UmbralItem.name);
-          if (self.name == "BrotherHurtMaster(Clone)" && !ModConfig.doppelPhase4.Value)
+          if (body.name == "BrotherHurtBody(Clone)" && PhaseCounter.instance.phase == 4 && !ModConfig.doppelPhase4.Value)
           {
+            body.inventory.GiveItem(UmbralItem);
             body.AddBuff(RoR2Content.Buffs.Immune);
-            Task.Delay(3000).ContinueWith(o => { body.RemoveBuff(RoR2Content.Buffs.Immune); });
+            body.inventory.GiveItem(RoR2Content.Items.HealthDecay, 60);
+            body.skillLocator.primary.skillFamily.variants[0].skillDef.interruptPriority = EntityStates.InterruptPriority.Skill;
+            body.skillLocator.primary.skillFamily.variants[0].skillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(GateOfBabylon));
+            body.skillLocator.secondary.skillFamily.variants[0].skillDef.activationState = new EntityStates.SerializableEntityStateType(typeof(MightOfBabylon));
           }
         }
       }
@@ -787,6 +896,8 @@ namespace UmbralMithrix
         // Make Mithrix spawn for phase 2
         if (phaseCounter == 1)
         {
+          self.phaseBossGroup.bestObservedName = "Mi?th??r?ix?";
+          self.phaseBossGroup.bestObservedSubtitle = "?K??ing? ?o?f? ?N?o?th?i?ng????";
           Mithrix.transform.position = new Vector3(-88.5f, 491.5f, -0.3f);
           Mithrix.transform.rotation = Quaternion.identity;
           Transform explicitSpawnPosition = Mithrix.transform;
@@ -800,9 +911,9 @@ namespace UmbralMithrix
         if (phaseCounter == 2)
         {
           GameObject emptyGO = new GameObject();
-          emptyGO.transform.position = new Vector3(-88.5f, 491.5f, -0.3f);
+          emptyGO.transform.position = new Vector3(-108.5f, 491.5f, -0.3f);
           emptyGO.transform.rotation = Quaternion.identity;
-          Mithrix.transform.position = new Vector3(-108.5f, 491.5f, -0.3f);
+          Mithrix.transform.position = new Vector3(-88.5f, 491.5f, -0.3f);
           Mithrix.transform.rotation = Quaternion.identity;
           Transform explicitSpawnPosition1 = Mithrix.transform;
           Transform explicitSpawnPosition2 = emptyGO.transform;
@@ -822,9 +933,9 @@ namespace UmbralMithrix
         {
           GameObject emptyGO = new GameObject();
           GameObject emptyGO2 = new GameObject();
-          emptyGO.transform.position = new Vector3(-60f, 500f, -0.3f);
+          emptyGO.transform.position = new Vector3(-60f, 520f, -0.3f);
           emptyGO.transform.rotation = Quaternion.identity;
-          emptyGO2.transform.position = new Vector3(-120f, 500f, -0.3f);
+          emptyGO2.transform.position = new Vector3(-120f, 520f, -0.3f);
           emptyGO2.transform.rotation = Quaternion.identity;
           Transform explicitSpawnPosition1 = emptyGO.transform;
           Transform explicitSpawnPosition2 = emptyGO2.transform;
@@ -895,15 +1006,33 @@ namespace UmbralMithrix
       {
         AdjustPhase4Stats();
 
-        // Spawn in BrotherHaunt (Random Flame Lines)
-        GameObject brotherHauntGO = Instantiate(BrotherHaunt);
-        brotherHauntGO.GetComponent<TeamComponent>().teamIndex = (TeamIndex)2;
-        NetworkServer.Spawn(brotherHauntGO);
-
-        if (ModConfig.doppelPhase4.Value)
+        if (!ModConfig.doppelPhase4.Value)
         {
-          Chat.AddMessage(new Chat.SimpleChatMessage() { baseToken = "<color=#8826dd>???: We...</color>" });
-          Chat.AddMessage(new Chat.SimpleChatMessage() { baseToken = "<color=#8826dd>???: Will have our vengeance</color>" });
+          SetupGroundPhantasm();
+          SetupNoblePhantasm();
+
+          GameObject brotherHauntInstance = Instantiate(BrotherHaunt, new Vector3(-88.5f, 490f, -0.3f), Quaternion.identity);
+          brotherHauntInstance.GetComponent<TeamComponent>().teamIndex = (TeamIndex)2;
+          NetworkServer.Spawn(brotherHauntInstance);
+
+          // Makes model invisible
+          voidling.transform.GetChild(0).gameObject.SetActive(false);
+          GameObject voidlingInstance = Instantiate(voidling, new Vector3(-88.5f, 520f, -0.3f), Quaternion.identity);
+          voidlingInstance.GetComponent<TeamComponent>().teamIndex = (TeamIndex)2;
+          SkillLocator voidlingSkillLocator = voidlingInstance.GetComponent<CharacterBody>().skillLocator;
+          voidlingSkillLocator.primary = new GenericSkill();
+          voidlingSkillLocator.secondary = new GenericSkill();
+          voidlingSkillLocator.utility = new GenericSkill();
+          voidlingSkillLocator.special = new GenericSkill();
+          List<Material> materials = new List<Material> { preBossMat, arenaWallMat, stealAuraMat };
+          Transform sphereIndicator = voidlingInstance.transform.GetChild(1).GetChild(0);
+          sphereIndicator.GetComponent<MeshRenderer>().SetMaterials(materials);
+          SphereZone sphere = voidlingInstance.GetComponent<SphereZone>();
+          sphere.radius = 275;
+          FogDamageController fogController = voidlingInstance.GetComponent<FogDamageController>();
+          fogController.healthFractionPerSecond = 0.05f;
+          fogController.healthFractionRampCoefficientPerSecond = 10f;
+          NetworkServer.Spawn(voidlingInstance);
         }
       }
       orig(self);
@@ -914,7 +1043,7 @@ namespace UmbralMithrix
       orig(self);
       if (shrineActivated)
       {
-        // Kill BrotherHaunt once the boss dies
+        GameObject.Find("MiniVoidRaidCrabBodyPhase3(Clone)").GetComponent<HealthComponent>().Suicide();
         GameObject.Find("BrotherHauntBody(Clone)").GetComponent<HealthComponent>().Suicide();
       }
     }
@@ -1110,37 +1239,13 @@ namespace UmbralMithrix
       else
         orig(self);
     }
-    private void FistSlamOnEnter(On.EntityStates.BrotherMonster.FistSlam.orig_OnEnter orig, FistSlam self)
-    {
-      if (shrineActivated)
-      {
-        FistSlam.waveProjectileDamageCoefficient = 2.3f;
-        FistSlam.healthCostFraction = 0.0f;
-        FistSlam.waveProjectileCount = 20;
-        FistSlam.baseDuration = 3.5f;
-
-        int lines = ModConfig.UltimateWaves.Value / 2;
-        float num2 = 360f / lines;
-        Vector3 vector3 = Vector3.ProjectOnPlane(self.inputBank.aimDirection, Vector3.up);
-        for (int i = 0; i < PlayerCharacterMasterController.instances.Count; i++)
-        {
-          // the extra wheel follows each player but stays at mithy's level in case theyre mid air
-          Vector3 position = new Vector3(PlayerCharacterMasterController.instances[i].body.corePosition.x, self.characterBody.footPosition.y, PlayerCharacterMasterController.instances[i].body.corePosition.z) + new Vector3(UnityEngine.Random.Range(-50f, 50f), 0.0f, UnityEngine.Random.Range(-50f, 50f));
-          for (int index = 0; index < lines; ++index)
-          {
-            Vector3 forward = Quaternion.AngleAxis(num2 * (float)index, Vector3.up) * vector3;
-            ProjectileManager.instance.FireProjectile(UltChannelState.waveProjectileLeftPrefab, position, Util.QuaternionSafeLookRotation(forward), self.gameObject, self.characterBody.damage * 3.5f, EntityStates.BrotherMonster.FistSlam.waveProjectileForce, Util.CheckRoll(self.characterBody.crit, self.characterBody.master));
-          }
-        }
-      }
-      orig(self);
-    }
 
     private void SpellChannelEnterStateOnEnter(On.EntityStates.BrotherMonster.SpellChannelEnterState.orig_OnEnter orig, SpellChannelEnterState self)
     {
       if (shrineActivated)
-        SpellChannelEnterState.duration = 2.5f;
-      orig(self);
+        self.outer.SetNextState(new EntityStates.BrotherMonster.SpellChannelExitState());
+      else
+        orig(self);
     }
 
     private void SpellChannelExitStateOnEnter(On.EntityStates.BrotherMonster.SpellChannelExitState.orig_OnEnter orig, SpellChannelExitState self)
