@@ -24,7 +24,7 @@ namespace UmbralMithrix
     [SerializeField]
     public GameObject fistProjectilePrefab = UmbralMithrix.noblePhantasm;
     public static float maxDistance = 40f;
-    public static float trackingDuration = 0.5f;
+    public static float trackingDuration = 1f;
     public static float fistDamageCoefficient = 4f;
     public static float fistForce = 2000f;
     public static string attackSoundString;

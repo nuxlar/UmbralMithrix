@@ -17,7 +17,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.8.0")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.8.1")]
   [BepInDependency("com.bepis.r2api")]
   [BepInDependency("com.rune580.riskofoptions")]
   [R2APISubmoduleDependency(new string[]
@@ -664,7 +664,7 @@ namespace UmbralMithrix
           if (self.characterBody.name == "MiniVoidRaidCrabBodyPhase3(Clone)" && PhaseCounter.instance.phase == 4)
           {
             elapsedStorm += Time.deltaTime;
-            if (elapsedStorm >= 1f && self.gameObject.GetComponent<SphereZone>().Networkradius > 100)
+            if (elapsedStorm >= 1f && self.gameObject.GetComponent<SphereZone>().Networkradius > 75)
             {
               elapsedStorm = elapsedStorm % 1f;
               self.gameObject.GetComponent<SphereZone>().Networkradius -= 2;
@@ -699,8 +699,8 @@ namespace UmbralMithrix
     {
       if (shrineActivated)
       {
-        EntityStates.BrotherHaunt.FireRandomProjectiles.chargeRechargeDuration = 1f;
-        EntityStates.BrotherHaunt.FireRandomProjectiles.chanceToFirePerSecond = 0.1f;
+        EntityStates.BrotherHaunt.FireRandomProjectiles.chargeRechargeDuration = 0.025f;
+        EntityStates.BrotherHaunt.FireRandomProjectiles.chanceToFirePerSecond = 0.01f;
       }
       else
       {
@@ -837,7 +837,7 @@ namespace UmbralMithrix
               int rIdx = r.Next(0, playerCount - 1);
               PlayerCharacterMasterController player = PlayerCharacterMasterController.instances[rIdx];
 
-              Vector3 position = new Vector3(player.body.footPosition.x, self.characterBody.footPosition.y, player.body.footPosition.z) + new Vector3(UnityEngine.Random.Range(-75f, 75f), 0.0f, UnityEngine.Random.Range(-75f, 75f));
+              Vector3 position = new Vector3(player.body.footPosition.x, self.characterBody.footPosition.y, player.body.footPosition.z) + new Vector3(UnityEngine.Random.Range(-50f, 50f), 0.0f, UnityEngine.Random.Range(-50f, 50f));
               for (int index = 0; index < pizzaLines; ++index)
               {
                 Vector3 forward = Quaternion.AngleAxis(num * (float)index, Vector3.up) * normalized;
@@ -896,7 +896,7 @@ namespace UmbralMithrix
         // Make Mithrix spawn for phase 2
         if (phaseCounter == 1)
         {
-          self.phaseBossGroup.bestObservedName = "Mi?th??r?ix?";
+          self.phaseBossGroup.bestObservedName = "???Mi??t?h?ri?x???";
           self.phaseBossGroup.bestObservedSubtitle = "?K??ing? ?o?f? ?N?o?th?i?ng????";
           Mithrix.transform.position = new Vector3(-88.5f, 491.5f, -0.3f);
           Mithrix.transform.rotation = Quaternion.identity;

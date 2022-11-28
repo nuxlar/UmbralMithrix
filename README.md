@@ -8,6 +8,16 @@ Phase info:
 - Phase 2 (skippable) An umbral clone spawns in after Crushing Leap to hunt.
 - Phase 3 The shadow splits into 2.
 - Phase 4 Survival or Umbral Wurms (configurable)
+  - Survival
+    - Mithrix traps all players within the Prison Realm, anyone left outside is reduced to nothing within seconds
+    - Mithrix has 2 new attacks, Gate Of Babylon and Might Of Babylon
+    - Gate Of Babylon: Mithrix materializes a vast arsenal of weaponry, launching a storm of blades
+    - Might Of Babylon: Mithrix manipulates a large area of the arena into a sea of blades
+    - Mithrix summons random lower damage pizzas to track the players
+  - Umbral Wurms
+    - 1 Wurm has a devastating laser attack
+    - The other launches an orb barrage
+    - Basically scuffed Gilded Wurms from RoR1
 - Phase 5 Congrats! look up and enjoy the fireworks
 
 ## How to Activate
@@ -27,6 +37,14 @@ The mod is highly configurable. You can edit config values in-game and during ru
 - Adding ?????
 
 ## Changelog
+
+**1.8.1**
+
+- Fixing P4 infinity pizza (idk how it broke itself over the weekend)
+- Reduces P3 pizza spawn range
+- Reduces P4 Prison Realm radius
+- Increased tracking duration for MightOfBabylon
+- Updates README with P4 info
 
 **1.8.0 (Cheers to Race and Cap for the Survival P4 idea and helping test/balance/brainstorm!)**
 
