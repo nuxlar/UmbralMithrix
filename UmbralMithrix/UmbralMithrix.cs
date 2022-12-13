@@ -1045,6 +1045,7 @@ namespace UmbralMithrix
       {
         GameObject.Find("MiniVoidRaidCrabBodyPhase3(Clone)").GetComponent<HealthComponent>().Suicide();
         GameObject.Find("BrotherHauntBody(Clone)").GetComponent<HealthComponent>().Suicide();
+        voidling.transform.GetChild(0).gameObject.SetActive(true);
       }
     }
 

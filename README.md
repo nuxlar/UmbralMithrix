@@ -38,6 +38,12 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ## Changelog
 
+**1.8.2**
+
+- Make Phase 4 configurable
+- Fixes Phase 3 Voidling being invisible after Mithrix
+- Rework Crushing Leap
+
 **1.8.1**
 
 - Fixing P4 infinity pizza (idk how it broke itself over the weekend)
