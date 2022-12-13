@@ -33,6 +33,7 @@ The mod is highly configurable. You can edit config values in-game and during ru
 ![mod options](https://i.ibb.co/q9fC9jj/Screenshot-2022-09-12-165657.png)
 
 ## Future Plans
+- Network the visuals (wonky in MP)
 - Make P4 configurable
 - Adding ?????
 
@@ -40,9 +41,7 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 **1.8.2**
 
-- Make Phase 4 configurable
 - Fixes Phase 3 Voidling being invisible after Mithrix
-- Rework Crushing Leap
 
 **1.8.1**
 
