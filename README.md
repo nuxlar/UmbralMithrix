@@ -39,6 +39,10 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ## Changelog
 
+**1.8.3**
+
+- R2API fun
+
 **1.8.2**
 
 - Fixes Phase 3 Voidling being invisible after Mithrix
