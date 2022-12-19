@@ -5,7 +5,6 @@ using RoR2.Projectile;
 using EntityStates.BrotherMonster;
 using EntityStates.BrotherMonster.Weapon;
 using R2API;
-using R2API.Utils;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -17,16 +16,12 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.8.2")]
-  [BepInDependency("com.bepis.r2api")]
-  [BepInDependency("com.rune580.riskofoptions")]
-  [R2APISubmoduleDependency(new string[]
-    {
-        "LanguageAPI",
-        "PrefabAPI",
-        "ContentAddition",
-        "ItemAPI"
-    })]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.8.3")]
+  [BepInDependency("com.bepis.r2api.items", BepInDependency.DependencyFlags.HardDependency)]
+  [BepInDependency("com.bepis.r2api.prefab", BepInDependency.DependencyFlags.HardDependency)]
+  [BepInDependency("com.bepis.r2api.language", BepInDependency.DependencyFlags.HardDependency)]
+  [BepInDependency("com.bepis.r2api.content_management", BepInDependency.DependencyFlags.HardDependency)]
+  [BepInDependency("com.rune580.riskofoptions", BepInDependency.DependencyFlags.SoftDependency)]
 
   public class UmbralMithrix : BaseUnityPlugin
   {
