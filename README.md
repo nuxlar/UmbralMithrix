@@ -1,6 +1,6 @@
 # Umbral Mithrix
 
-Accursed Mithrix **reworked** variant with clones and new phases (For more info on the [base mod](https://thunderstore.io/package/Nuxlar/MithrixTheAccursed/)).
+Install [Risk of Options](https://thunderstore.io/package/Rune580/Risk_Of_Options/) to edit configs in-game.
 
 Phase info:
 
@@ -33,11 +33,24 @@ The mod is highly configurable. You can edit config values in-game and during ru
 ![mod options](https://i.ibb.co/q9fC9jj/Screenshot-2022-09-12-165657.png)
 
 ## Future Plans
-- Network the visuals (wonky in MP)
-- Make P4 configurable
-- Adding ?????
+- Probably nothing OR
+- Refactor code to be more organized
+- Network the P4 visuals (wonky in MP)
+- Rework P4 again
+- Rework the Wurms
 
 ## Changelog
+
+**1.8.5**
+
+- Added unused throne spawn state
+- Dependency updates
+- Reduces Glass Mithrix's damage to half of Mithrix's damage (felt unfair for glass clones to have full damage)
+- Added "new" arena (don't really care about vanilla anymore so the arena changes are always active)
+  - More outer pillars
+  - Outer arches
+  - No inner arena boulders
+  - No inner arena ramps
 
 **1.8.3**
 

@@ -16,7 +16,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.8.3")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.8.5")]
   [BepInDependency("com.bepis.r2api.items", BepInDependency.DependencyFlags.HardDependency)]
   [BepInDependency("com.bepis.r2api.prefab", BepInDependency.DependencyFlags.HardDependency)]
   [BepInDependency("com.bepis.r2api.language", BepInDependency.DependencyFlags.HardDependency)]
@@ -116,8 +116,42 @@ namespace UmbralMithrix
       On.EntityStates.BrotherMonster.StaggerExit.OnEnter += StaggerExitOnEnter;
       On.EntityStates.BrotherMonster.StaggerLoop.OnEnter += StaggerLoopOnEnter;
       On.EntityStates.BrotherMonster.TrueDeathState.OnEnter += TrueDeathStateOnEnter;
+      Mithrix.GetComponent<EntityStateMachine>().initialStateType = new EntityStates.SerializableEntityStateType(typeof(ThroneSpawnState));
     }
 
+    // Mithrix text <color=#c6d5ff><size=120%>Mithrix: Die.</color></size>
+
+    private void ArenaSetup()
+    {
+      // -88.4849 491.488 -0.3325 center orb thing
+      GameObject arenaHolder = GameObject.Find("HOLDER: Final Arena");
+      if (arenaHolder)
+      {
+        // Disable inner arena pillars and boulders
+        Transform innerPillars = arenaHolder.transform.GetChild(0);
+        innerPillars.gameObject.SetActive(false);
+        Transform arenaBoulders = arenaHolder.transform.GetChild(6);
+        arenaBoulders.gameObject.SetActive(false);
+        // Add outer pillars and arches
+        Transform outerPillars = arenaHolder.transform.GetChild(1);
+        for (int i = 0; i < 8; i++)
+          outerPillars.GetChild(i).gameObject.SetActive(true);
+        for (int i = 8; i < 12; i++)
+        {
+          Transform weakPillar = outerPillars.GetChild(i);
+          for (int idx = 0; idx < 4; idx++)
+            weakPillar.GetChild(idx).gameObject.SetActive(true);
+        }
+      }
+      // Activate the unused throne
+      GameObject sceneInfo = GameObject.Find("SceneInfo");
+      if (sceneInfo)
+      {
+        Transform missionController = sceneInfo.transform.GetChild(0);
+        GameObject phase1Throne = missionController.transform.GetChild(3).GetChild(0).GetChild(3).gameObject;
+        phase1Throne.SetActive(true);
+      }
+    }
     private void SetupNoblePhantasm()
     {
       foreach (GameObject weapon in weaponsList)
@@ -295,8 +329,8 @@ namespace UmbralMithrix
       MithrixMotor.airControl = ModConfig.aircontrol.Value;
       MithrixMotor.jumpCount = ModConfig.jumpcount.Value;
 
-      MithrixGlassBody.baseDamage = ModConfig.basedamage.Value;
-      MithrixGlassBody.levelDamage = ModConfig.leveldamage.Value;
+      MithrixGlassBody.baseDamage = ModConfig.basedamage.Value / 2;
+      MithrixGlassBody.levelDamage = ModConfig.leveldamage.Value / 2;
       MithrixGlassMotor.airControl = ModConfig.aircontrol.Value;
       MithrixGlassDirection.turnSpeed = ModConfig.turningspeed.Value;
 
@@ -371,6 +405,7 @@ namespace UmbralMithrix
         hpMultiplier = (ModConfig.phase2LoopHPScaling.Value * Run.instance.loopClearCount) + (ModConfig.phase2PlayerHPScaling.Value * playerCount);
         mobilityMultiplier = (ModConfig.phase2LoopMobilityScaling.Value * Run.instance.loopClearCount) + (ModConfig.phase2PlayerMobilityScaling.Value * playerCount);
       }
+      Mithrix.GetComponent<EntityStateMachine>().initialStateType = new EntityStates.SerializableEntityStateType(typeof(SkySpawnState));
       CharacterBody MithrixBody = Mithrix.GetComponent<CharacterBody>();
       CharacterDirection MithrixDirection = Mithrix.GetComponent<CharacterDirection>();
 
@@ -553,7 +588,10 @@ namespace UmbralMithrix
     {
       orig(self);
       if (self.sceneDef.cachedName == "moon2")
+      {
+        ArenaSetup();
         SpawnUmbralObelisk();
+      }
     }
 
     private void SpawnUmbralObelisk()
@@ -891,8 +929,6 @@ namespace UmbralMithrix
         // Make Mithrix spawn for phase 2
         if (phaseCounter == 1)
         {
-          self.phaseBossGroup.bestObservedName = "???Mi??t?h?ri?x???";
-          self.phaseBossGroup.bestObservedSubtitle = "?K??ing? ?o?f? ?N?o?th?i?ng????";
           Mithrix.transform.position = new Vector3(-88.5f, 491.5f, -0.3f);
           Mithrix.transform.rotation = Quaternion.identity;
           Transform explicitSpawnPosition = Mithrix.transform;
