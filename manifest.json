@@ -1,9 +1,10 @@
 ﻿{
 	"name": "UmbralMithrix",
-	"version_number": "1.8.5",
+	"version_number": "1.8.6",
 	"website_url": "https://github.com/nuxlar/UmbralMithrix",
 	"description": "The Umbral King of Nothing uses shadows and new abilities to overwhelm all challengers.",
 	"dependencies": [
+		"Rune580-Risk_Of_Options-2.5.3",
 		"RiskofThunder-R2API_Items-1.0.1",
 		"RiskofThunder-R2API_Prefab-1.0.1",
 		"RiskofThunder-R2API_Language-1.0.0",

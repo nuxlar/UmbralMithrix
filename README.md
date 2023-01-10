@@ -1,10 +1,8 @@
 # Umbral Mithrix
 
-Install [Risk of Options](https://thunderstore.io/package/Rune580/Risk_Of_Options/) to edit configs in-game.
-
 Phase info:
 
-- Phase 1 Mithrix now jumps on you for a Crushing Leap, get in the air. Bash, Slam, and Sprint spawn a Glass Clone on each survivor.
+- Phase 1 Mithrix now jumps on you for a Crushing Leap, run. Bash, Slam, and Sprint spawn a Glass Clone on each survivor.
 - Phase 2 (skippable) An umbral clone spawns in after Crushing Leap to hunt.
 - Phase 3 The shadow splits into 2.
 - Phase 4 Survival or Umbral Wurms (configurable)
@@ -40,6 +38,14 @@ The mod is highly configurable. You can edit config values in-game and during ru
 - Rework the Wurms
 
 ## Changelog
+
+**1.8.6**
+
+- Fixes throne spawn not working after the first time
+- Reworks Crushing Leap to stay on the ground instead of the current wonkiness and stop moving 1 second before the config value
+- KNOWN ISSUE: Crushing Leap can make him jump out of the arena just dont sprint into the arena edges while he jumps
+- Adds Risk of Options as a dependency, might be a weird issue, adding it just in case
+- Deletes the scuffed P3 HP sharing
 
 **1.8.5**
 

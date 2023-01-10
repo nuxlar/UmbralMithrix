@@ -16,7 +16,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.8.5")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.8.6")]
   [BepInDependency("com.bepis.r2api.items", BepInDependency.DependencyFlags.HardDependency)]
   [BepInDependency("com.bepis.r2api.prefab", BepInDependency.DependencyFlags.HardDependency)]
   [BepInDependency("com.bepis.r2api.language", BepInDependency.DependencyFlags.HardDependency)]
@@ -32,7 +32,6 @@ namespace UmbralMithrix
     bool shrineActivated = false;
     public static bool spawnedClone = false;
     public static ItemDef UmbralItem;
-    IEnumerable<CharacterBody> mithies = null;
 
     static GameObject MagmaWorm = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/MagmaWorm/MagmaWormBody.prefab").WaitForCompletion();
     GameObject Throne = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/mdlBrotherThrone.fbx").WaitForCompletion();
@@ -91,7 +90,6 @@ namespace UmbralMithrix
       On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.OnEnter += ReadyToEndGameOnEnter;
       On.EntityStates.Interactables.MSObelisk.ReadyToEndGame.FixedUpdate += ReadyToEndGameFixedUpdate;
       On.RoR2.Stage.Start += StageStart;
-      On.RoR2.HealthComponent.TakeDamage += TakeDamage;
       On.RoR2.CharacterMaster.OnBodyStart += CharacterMasterOnBodyStart;
       On.EntityStates.BrotherHaunt.FireRandomProjectiles.OnEnter += FireRandomProjectilesOnEnter;
       On.EntityStates.BrotherHaunt.FireRandomProjectiles.FireProjectile += FireRandomProjectilesFireProjectile;
@@ -116,7 +114,6 @@ namespace UmbralMithrix
       On.EntityStates.BrotherMonster.StaggerExit.OnEnter += StaggerExitOnEnter;
       On.EntityStates.BrotherMonster.StaggerLoop.OnEnter += StaggerLoopOnEnter;
       On.EntityStates.BrotherMonster.TrueDeathState.OnEnter += TrueDeathStateOnEnter;
-      Mithrix.GetComponent<EntityStateMachine>().initialStateType = new EntityStates.SerializableEntityStateType(typeof(ThroneSpawnState));
     }
 
     // Mithrix text <color=#c6d5ff><size=120%>Mithrix: Die.</color></size>
@@ -591,6 +588,7 @@ namespace UmbralMithrix
       {
         ArenaSetup();
         SpawnUmbralObelisk();
+        Mithrix.GetComponent<EntityStateMachine>().initialStateType = new EntityStates.SerializableEntityStateType(typeof(ThroneSpawnState));
       }
     }
 
@@ -637,24 +635,6 @@ namespace UmbralMithrix
       RevertToVanillaStats();
       RevertToVanillaSkills();
       orig(self);
-    }
-
-    private void TakeDamage(On.RoR2.HealthComponent.orig_TakeDamage orig, RoR2.HealthComponent self, DamageInfo damageInfo)
-    {
-      orig(self, damageInfo);
-      if (shrineActivated && (bool)PhaseCounter.instance && ModConfig.enableSharedHP.Value)
-      {
-        if (self.body.name == "BrotherBody(Clone)" && PhaseCounter.instance.phase == 3)
-        {
-          if (mithies == null)
-            mithies = Resources.FindObjectsOfTypeAll<CharacterBody>().Where(obj => obj.name == "BrotherBody(Clone)");
-          foreach (CharacterBody mithy in mithies)
-          {
-            if (mithy.netId != self.netId)
-              mithy.healthComponent.health = self.health;
-          }
-        }
-      }
     }
 
     // Prevent freezing from affecting Mithrix after 10 stages or if the config is enabled
@@ -993,7 +973,6 @@ namespace UmbralMithrix
       if (shrineActivated)
       {
         spawnedClone = false;
-        mithies = null;
         Logger.LogMessage("Accursing the King of Nothing");
         AdjustBaseSkills();
         AdjustBaseStats();

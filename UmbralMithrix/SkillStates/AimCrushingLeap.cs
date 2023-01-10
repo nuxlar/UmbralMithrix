@@ -4,6 +4,7 @@ using RoR2;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using EntityStates;
+using System.Linq;
 
 namespace UmbralMithrix
 {
@@ -17,6 +18,7 @@ namespace UmbralMithrix
     private GameObject areaIndicatorInstance;
     static Material tpMat = Addressables.LoadAssetAsync<Material>("RoR2/Base/Teleporters/matTeleporterRangeIndicator.mat").WaitForCompletion();
     static Material awShellExpolsionMat = Addressables.LoadAssetAsync<Material>("RoR2/Base/artifactworld/matArtifactShellExplosionIndicator.mat").WaitForCompletion();
+    private RaycastHit targetToFloor;
 
     public override void OnEnter()
     {
@@ -48,17 +50,26 @@ namespace UmbralMithrix
     {
       if (!(bool)(Object)this.areaIndicatorInstance)
         return;
-      float num = 2000f;
-      Ray aimRay = ((BaseState)this).GetAimRay();
-      RaycastHit raycastHit;
-      double maxDistance = (double)num;
-      LayerIndex world = LayerIndex.world;
-      int mask = (int)world.mask;
-      if (!Physics.Raycast(aimRay, out raycastHit, (float)maxDistance, mask))
+      BullseyeSearch bullseyeSearch = new BullseyeSearch();
+      bullseyeSearch.viewer = this.characterBody;
+      bullseyeSearch.searchOrigin = this.characterBody.corePosition;
+      bullseyeSearch.searchDirection = this.characterBody.corePosition;
+      bullseyeSearch.maxDistanceFilter = 2000;
+      bullseyeSearch.teamMaskFilter = TeamMask.GetEnemyTeams(this.GetTeam());
+      bullseyeSearch.sortMode = BullseyeSearch.SortMode.DistanceAndAngle;
+      bullseyeSearch.RefreshCandidates();
+      var target = bullseyeSearch.GetResults().FirstOrDefault<HurtBox>();
+      if (!(bool)(Object)target)
         return;
-      this.areaIndicatorInstance.transform.position = raycastHit.point;
-      this.areaIndicatorInstance.transform.up = raycastHit.normal;
+      RaycastHit hitInfo;
+      if (!Physics.Raycast(new Ray(target.transform.position, Vector3.down), out hitInfo, 2000f, (int)LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
+        return;
+      this.targetToFloor = hitInfo;
+      this.areaIndicatorInstance.transform.position = targetToFloor.point;
+      this.areaIndicatorInstance.transform.up = targetToFloor.normal;
+
     }
+
 
     public void HandleFollowupAttack()
     {
@@ -66,21 +77,15 @@ namespace UmbralMithrix
       this.outer.SetNextState(new ExitCrushingLeap());
     }
 
-    public override void Update()
-    {
-      base.Update();
-      this.UpdateAreaIndicator();
-    }
-
     public override void FixedUpdate()
     {
       base.FixedUpdate();
       this.stopwatch += Time.fixedDeltaTime;
-      if (this.stopwatch >= (this.maxDuration - 0.5f))
+      if (this.stopwatch < (this.maxDuration - 1f))
+        this.UpdateAreaIndicator();
+      if (this.stopwatch >= (this.maxDuration - 1f))
         this.areaIndicatorInstance.transform.GetChild(0).GetChild(1).GetComponent<MeshRenderer>().material = awShellExpolsionMat;
-      if ((bool)(Object)this.characterMotor)
-        this.characterMotor.velocity = Vector3.zero;
-      if (!this.isAuthority || !(bool)(Object)this.inputBank || (double)this.fixedAge < (double)this.maxDuration && !((InputBankTest.ButtonState)this.inputBank.skill1).justPressed && !((InputBankTest.ButtonState)this.inputBank.skill4).justPressed)
+      if (!this.isAuthority || !(bool)(Object)this.inputBank || (double)this.fixedAge < (double)this.maxDuration)
         return;
       this.HandleFollowupAttack();
     }

@@ -88,7 +88,6 @@ namespace UmbralMithrix
     public static void InitConfig(ConfigFile config)
     {
       doppelPhase4 = config.Bind("General", "Phase 4 Wurm Fight", false, "Toggle the alternate Phase 4 fight");
-      enableSharedHP = config.Bind("General", "Toggle Shared HP", false, "Toggle if Phase 3 should have the BETA shared HP bar");
       phase2Skip = config.Bind("General", "Phase 2 Skip", false, "Skip The Reworked Phase 2 for a more casual fight");
       debuffResistance = config.Bind("General", "Freeze/Nullify Immune", false, "Toggle the debuff resistance for loop 1, will not turn off for loops 2 and up");
 
