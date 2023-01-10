@@ -16,7 +16,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.8.7")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.8.8")]
   [BepInDependency("com.bepis.r2api.items", BepInDependency.DependencyFlags.HardDependency)]
   [BepInDependency("com.bepis.r2api.prefab", BepInDependency.DependencyFlags.HardDependency)]
   [BepInDependency("com.bepis.r2api.language", BepInDependency.DependencyFlags.HardDependency)]

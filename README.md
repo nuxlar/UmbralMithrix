@@ -39,6 +39,10 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ## Changelog
 
+**1.8.8**
+
+- Fixes the not-such-an-edge-case edge case of being near the walls and the fucker jumping off the moon
+
 **1.8.7**
 
 - Fixes the whole mod not working

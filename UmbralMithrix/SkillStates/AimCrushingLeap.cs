@@ -18,7 +18,6 @@ namespace UmbralMithrix
     private GameObject areaIndicatorInstance;
     static Material tpMat = Addressables.LoadAssetAsync<Material>("RoR2/Base/Teleporters/matTeleporterRangeIndicator.mat").WaitForCompletion();
     static Material awShellExpolsionMat = Addressables.LoadAssetAsync<Material>("RoR2/Base/artifactworld/matArtifactShellExplosionIndicator.mat").WaitForCompletion();
-    private RaycastHit targetToFloor;
 
     public override void OnEnter()
     {
@@ -50,6 +49,10 @@ namespace UmbralMithrix
     {
       if (!(bool)(Object)this.areaIndicatorInstance)
         return;
+      if (this.characterBody.master.aiComponents.Length == 0 || this.characterBody.master.aiComponents[0].currentEnemy == null)
+        return;
+      Vector3 lastEnemyPosition = this.characterBody.master.aiComponents[0].currentEnemy.lastKnownBullseyePosition.Value;
+      this.areaIndicatorInstance.transform.position = lastEnemyPosition;
       BullseyeSearch bullseyeSearch = new BullseyeSearch();
       bullseyeSearch.viewer = this.characterBody;
       bullseyeSearch.searchOrigin = this.characterBody.corePosition;
@@ -62,12 +65,9 @@ namespace UmbralMithrix
       if (!(bool)(Object)target)
         return;
       RaycastHit hitInfo;
-      if (!Physics.Raycast(new Ray(target.transform.position, Vector3.down), out hitInfo, 2000f, (int)LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
+      if (!Physics.Raycast(new Ray(target.transform.position, Vector3.down), out hitInfo, 500f, (int)LayerIndex.world.mask, QueryTriggerInteraction.UseGlobal))
         return;
-      this.targetToFloor = hitInfo;
-      this.areaIndicatorInstance.transform.position = targetToFloor.point;
-      this.areaIndicatorInstance.transform.up = targetToFloor.normal;
-
+      this.areaIndicatorInstance.transform.position = hitInfo.point;
     }
 
 
