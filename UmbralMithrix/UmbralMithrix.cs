@@ -16,7 +16,7 @@ using UnityEngine.AddressableAssets;
 
 namespace UmbralMithrix
 {
-  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.8.6")]
+  [BepInPlugin("com.Nuxlar.UmbralMithrix", "UmbralMithrix", "1.8.7")]
   [BepInDependency("com.bepis.r2api.items", BepInDependency.DependencyFlags.HardDependency)]
   [BepInDependency("com.bepis.r2api.prefab", BepInDependency.DependencyFlags.HardDependency)]
   [BepInDependency("com.bepis.r2api.language", BepInDependency.DependencyFlags.HardDependency)]
@@ -436,8 +436,8 @@ namespace UmbralMithrix
       CharacterBody MithrixBody = Mithrix.GetComponent<CharacterBody>();
       CharacterDirection MithrixDirection = Mithrix.GetComponent<CharacterDirection>();
 
-      MithrixBody.baseMaxHealth = ModConfig.enableSharedHP.Value ? ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier) : (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 2;
-      MithrixBody.levelMaxHealth = ModConfig.enableSharedHP.Value ? ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier) : (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 2;
+      MithrixBody.baseMaxHealth = (ModConfig.basehealth.Value + (ModConfig.basehealth.Value * hpMultiplier)) / 2;
+      MithrixBody.levelMaxHealth = (ModConfig.levelhealth.Value + (ModConfig.levelhealth.Value * hpMultiplier)) / 2;
 
       MithrixBody.baseMoveSpeed = ModConfig.basespeed.Value + (ModConfig.basespeed.Value * mobilityMultiplier);
       MithrixBody.baseAcceleration = ModConfig.acceleration.Value + (ModConfig.acceleration.Value * mobilityMultiplier);
@@ -586,8 +586,8 @@ namespace UmbralMithrix
       orig(self);
       if (self.sceneDef.cachedName == "moon2")
       {
-        ArenaSetup();
         SpawnUmbralObelisk();
+        ArenaSetup();
         Mithrix.GetComponent<EntityStateMachine>().initialStateType = new EntityStates.SerializableEntityStateType(typeof(ThroneSpawnState));
       }
     }

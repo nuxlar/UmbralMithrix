@@ -39,6 +39,10 @@ The mod is highly configurable. You can edit config values in-game and during ru
 
 ## Changelog
 
+**1.8.7**
+
+- Fixes the whole mod not working
+
 **1.8.6**
 
 - Fixes throne spawn not working after the first time

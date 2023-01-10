@@ -8,7 +8,6 @@ namespace UmbralMithrix
   internal class ModConfig
   {
     public static ConfigEntry<bool> doppelPhase4;
-    public static ConfigEntry<bool> enableSharedHP;
     public static ConfigEntry<bool> phase2Skip;
     public static ConfigEntry<bool> debuffResistance;
 
@@ -161,7 +160,6 @@ namespace UmbralMithrix
       // Risk Of Options Setup
       // General
       ModSettingsManager.AddOption(new CheckBoxOption(doppelPhase4));
-      ModSettingsManager.AddOption(new CheckBoxOption(enableSharedHP));
       ModSettingsManager.AddOption(new CheckBoxOption(phase2Skip));
       ModSettingsManager.AddOption(new CheckBoxOption(debuffResistance));
       // Scaling
